@@ -24,11 +24,11 @@ const initialBoard = [
 ];
 
 
-const boardMapper = (board) => {
-  return board.map((square, index) => {
+const BoardMapper = ({board, selectedPiece, setSelectedPiece}) => {
+  return board.map((piece, index) => {
     const position = index + 1
-    if(square){
-      return <div className={`${square} square-${position} piece`}></div>
+    if(piece){
+      return <div onClick={() => {setSelectedPiece({piece: piece, position: position})}} className={`${piece} square-${position} piece ${(selectedPiece.piece === piece && selectedPiece.position === position) ? "selected-piece" : "" }`}></div>
     } else {
       return
     }
@@ -37,12 +37,17 @@ const boardMapper = (board) => {
 
 export default function Board() {
 
+  const [selectedPiece, setSelectedPiece] = useState({
+    piece: "",
+    position: "",
+  })
   const [board, setBoard] = useState(initialBoard)
 
   return (
     <div className='board'>
       <div className='board-grid'>
-        {boardMapper(board)}
+        {/* {BoardMapper(board, selectPiece, unSelectPiece)} */}
+        <BoardMapper board={board} selectedPiece={selectedPiece} setSelectedPiece={setSelectedPiece} />
         {/* <div className={`bp square-24 piece`}></div> */}
       </div>
     </div>
