@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "start",
+      "path": "chess",
+      "group": {
+		"kind": "build",
+		"isDefault": true
+	  },
+      "problemMatcher": [],
+      "label": "npm: start - chess",
+      "detail": "vite build",
+    }
+  ]
+}
