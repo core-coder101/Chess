@@ -264,8 +264,8 @@ export default function Board() {
 
       // universal pieces
       let updated = board
-      switch(type){
-        case 'r':
+      switch(true){
+        case (type === 'r' || type === 'q'):
           let i = pos
 
           // to search down
@@ -335,11 +335,11 @@ export default function Board() {
               updated[x] = 'h'
             }
           }
-          let newArr = Array.from(updated)
-          setBoard(newArr)
-          console.log("captureSearchIndexes: ", captureSearchIndexes);
-        case 'b':
-        
+          let newArr = Array.from(updated);
+          setBoard(newArr);
+          break
+        case (type === 'b' || type === 'q'):
+
           // to search bottom right
           let pieceBottomRight = false;
           for(let x = pos + 9; x < 64 && (x % 8 !== 0); x += 9){
@@ -410,16 +410,30 @@ export default function Board() {
         
           let newArr2 = Array.from(updated);
           setBoard(newArr2);
-          console.log("captureSearchIndexes: ", captureSearchIndexes);
-          break;          
+          break;
+        case (type === 'k'):
+          captureSearchIndexes = [pos + 7, pos - 7, pos + 8, pos - 8, pos + 9, pos - 9, pos + 1, pos - 1]
+          captureSearchIndexes.map(index => {
+            if(index >= 0 && index < 64){
+              if(updated[index] === ""){
+                updated[index] = "h"
+              } else if(updated[index].charAt(0) !== color) {
+                updated[index] = `${updated[index]}c`
+              }
+            }
+          })
+          let newArr3 = Array.from(updated);
+          setBoard(newArr3);
+          break
+
       }
     }
   }, [selectedPiece]);
 
 
 
-  const   getBoardFromHistory = (history) => {
-    let boardToSend = boardForBishopTest
+  const getBoardFromHistory = (history) => {
+    let boardToSend = initialBoard
     let capturedPieces = []
     if(!history.length > 0){
       return { boardToSend, capturedPieces }
