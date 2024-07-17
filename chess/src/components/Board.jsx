@@ -12,6 +12,17 @@ const initialBoard = [
   'wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr',
 ];
 
+const boardForRookTest = [
+  '', '', '', '', '', '', '', '',
+  '', '', '', '', 'br', '', '', '',
+  '', '', '', '', '', '', '', '',
+  '', '', '', '', '', '', '', '',
+  '', '', '', '', 'wr', '', '', '',
+  '', '', '', '', '', '', '', '',
+  '', '', '', '', '', '', '', '',
+  '', '', '', '', '', '', '', '',
+];
+
 const BoardMapper = ({ board, selectedPiece, setSelectedPiece, turn }) => {
   return board.map((piece, index) => {
     const position = index + 1;
@@ -95,21 +106,6 @@ export default function Board() {
       }
     ]);
 
-    // Update the state and clear selected piece + switch the turns
-    // setBoard(prev => {
-    //   return [
-    //     ...prev.slice(0, selectedPiece.position - 1),
-    //     "",
-    //     ...prev.slice(selectedPiece.position),
-    //   ]
-    // })
-    // setBoard(prev => {
-    //   return [
-    //     ...prev.slice(0, moveIndex),
-    //     selectedPiece.piece,
-    //     ...prev.slice(moveIndex + 1),
-    //   ]
-    // })
     setTurn(prev => !prev)
     setSelectedPiece(emptyPieceState)
   }
@@ -170,11 +166,11 @@ export default function Board() {
       let possibleMoves = [];
       let searchIndexes = [];
       let captureSearchIndexes = [];
+      const pos = position - 1; // Convert to 0-based index
 
       if (color === 'w') {
         switch (type) {
           case 'p':
-            const pos = position - 1; // Convert to 0-based index
             if (pos >= 48 && pos <= 55) { // First row for pawns
               searchIndexes = [pos - 8, pos - 16]; // Forward move and double move
               captureSearchIndexes = [pos - 7, pos - 9]; // Diagonal captures
@@ -264,6 +260,84 @@ export default function Board() {
           default:
             break;
         }
+      }
+
+      // universal pieces
+      let updated = board
+      switch(type){
+        case 'r':
+          let i = pos
+
+          // to search down
+          let pieceBelow = false
+          for(let x = i + 8; x <= 64; x += 8){
+            if(pieceBelow){
+              break
+            }
+            if(board[x] != ""){
+              pieceBelow = true
+              if(board[x].charAt(0) !== color){
+                possibleMoves.push(x);
+                updated[x] = `${updated[x]}c`
+              }
+            } else {
+              updated[x] = 'h'
+            }
+          }
+
+          // to search up
+          let pieceAbove = false
+          for(let x = i - 8; x > 0; x -= 8){
+            if(pieceAbove){
+              break
+            }
+            if(board[x] != ""){
+              pieceAbove = true
+              if(board[x].charAt(0) !== color){
+                possibleMoves.push(x);
+                updated[x] = `${updated[x]}c`
+              }
+            } else {
+              updated[x] = 'h'
+            }
+          }
+
+          // to search right
+          let pieceRight = false
+          for(let x = i + 1; (x % 8) !== 0; x += 1){
+            if(pieceRight){
+              break
+            }
+            if(board[x] != ""){
+              pieceRight = true
+              if(board[x].charAt(0) !== color){
+                possibleMoves.push(x);
+                updated[x] = `${updated[x]}c`
+              }
+            } else {
+              updated[x] = 'h'
+            }
+          }
+
+          // to search left
+          let pieceLeft = false
+          for(let x = i - 1; (x % 8) !== 7 && x >= 0; x -= 1){
+            if(pieceLeft){
+              break
+            }
+            if(board[x] != ""){
+              pieceLeft = true
+              if(board[x].charAt(0) !== color){
+                possibleMoves.push(x);
+                updated[x] = `${updated[x]}c`
+              }
+            } else {
+              updated[x] = 'h'
+            }
+          }
+          let newArr = Array.from(updated)
+          setBoard(newArr)
+          console.log("captureSearchIndexes: ", captureSearchIndexes);
       }
     }
   }, [selectedPiece]);
