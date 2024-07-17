@@ -12,12 +12,12 @@ const initialBoard = [
   'wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr',
 ];
 
-const boardForBishopTest = [
-  '', '', '', '', '', '', '', '',
-  '', '', '', 'bb', 'bb', '', '', '',
+const boardForKnightTest = [
   '', '', '', '', '', '', '', '',
   '', '', '', '', '', '', '', '',
-  '', '', '', 'wb', 'wb', '', '', '',
+  '', '', '', 'wn', '', '', '', '',
+  '', '', '', '', '', '', '', '',
+  '', '', '', '', '', '', 'bn', '',
   '', '', '', '', '', '', '', '',
   '', '', '', '', '', '', '', '',
   '', '', '', '', '', '', '', '',
@@ -276,8 +276,6 @@ export default function Board() {
           }
           if(board[x] != ""){
             pieceBelow = true
-            console.log("x: ", x);
-            console.log("board[x]: ", board[x]);
             if(board[x].charAt(0) !== color){
               possibleMoves.push(x);
               updated[x] = `${updated[x]}c`
@@ -426,6 +424,91 @@ export default function Board() {
         })
         let newArr3 = Array.from(updated);
         setBoard(newArr3);
+      }
+      if(type === 'n'){
+        // captureSearchIndexes = [
+        //   pos + 15, // bottom left
+        //   pos - 15, // top right
+        //   pos + 17, // bottom right
+        //   pos - 17, // top left
+        //   pos + 6, // left bottom (yes)
+        //   pos - 6, // right top
+        //   pos + 10, // right bottom
+        //   pos - 10 // left top
+        // ]
+        const topRight = pos - 15
+        const topLeft = pos - 17
+        const bottomRight = pos + 17
+        const bottomLeft = pos + 15
+        const leftTop = pos - 10
+        const leftBottom = pos + 6
+        const rightTop = pos - 6
+        const rightBottom = pos + 10
+
+        const distanceFromRight = ( ( (position % 8) ? (position % 8) : 8 ) - 8 ) * -1
+        const distanceFromLeft = (position % 8 ? position % 8 : 8) - 1
+        const distanceFromTop = Math.floor(position / 8)
+        const distanceFromBottom = Math.floor((64 - position) / 8)
+
+        console.log("distanceFromRight: ", distanceFromRight);
+        console.log("distanceFromLeft: ", distanceFromLeft);
+        console.log("distanceFromTop ", distanceFromTop);
+        console.log("distanceFromBottom: ", distanceFromBottom);
+
+          // im just gonna go one-by-one and define conditions for each of the possible move
+          // later we will know what condiitions are in common and merge them ig
+
+          const setPossibleMove = (index) => {
+            if(updated[index] === ""){
+              updated[index] = "h"
+            } else if(updated[index].charAt(0) !== color) {
+              updated[index] = `${updated[index]}c`
+            }
+          }
+          
+        if(distanceFromRight > 0 && distanceFromTop > 1){
+          setPossibleMove(topRight)
+          possibleMoves.push(topRight)
+        }
+
+        if(distanceFromRight > 1 && distanceFromTop > 0){
+          setPossibleMove(rightTop)
+          possibleMoves.push(rightTop)
+        }
+
+        if(distanceFromRight > 1 && distanceFromBottom > 0){
+          setPossibleMove(rightBottom)
+          possibleMoves.push(rightBottom)
+        }
+
+        if(distanceFromBottom > 1 && distanceFromRight > 0){
+          setPossibleMove(bottomRight)
+          possibleMoves.push(bottomRight)
+        }
+
+        if(distanceFromBottom > 1 && distanceFromLeft > 0){
+          setPossibleMove(bottomLeft)
+          possibleMoves.push(bottomLeft)
+        }
+
+        if(distanceFromLeft > 1 && distanceFromBottom > 0){
+          setPossibleMove(leftBottom)
+          possibleMoves.push(leftBottom)
+        }
+
+        if(distanceFromLeft > 1 && distanceFromTop > 0){
+          setPossibleMove(leftTop)
+          possibleMoves.push(leftTop)
+        }
+
+        if(distanceFromTop > 1 && distanceFromLeft > 0){
+          setPossibleMove(topLeft)
+          possibleMoves.push(topLeft)
+        }
+
+
+        let newArr4 = Array.from(updated)
+        setBoard(newArr4)
       }
       }
   }, [selectedPiece]);

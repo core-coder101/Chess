@@ -1,15 +1,24 @@
 :root {
-    --board-width: 600px;
+    /* don't add width, only use height and let aspect-ratio do the rest */
+    --board-width: 90%; 
+    --board-height: 80vh;
 }  
 
 .board{
-    width: var(--board-width);
-    height: var(--board-width);
+    height: var(--board-height);
     background-image: url(https://assets-themes.chess.com/image/9rdwe/200.png );
     object-fit: scale-down;
     background-size: 100%;
     background-repeat: no-repeat;
     position: relative;
+    aspect-ratio: 1;
+}
+
+@media (max-width: 576px){
+    .board{
+        height: unset;
+        width: var(--board-width);
+    }
 }
 
 .board-grid{
