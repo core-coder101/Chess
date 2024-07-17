@@ -270,12 +270,14 @@ export default function Board() {
 
         // to search down
         let pieceBelow = false
-        for(let x = i + 8; x <= 64; x += 8){
+        for(let x = i + 8; x < 64; x += 8){
           if(pieceBelow){
             break
           }
           if(board[x] != ""){
             pieceBelow = true
+            console.log("x: ", x);
+            console.log("board[x]: ", board[x]);
             if(board[x].charAt(0) !== color){
               possibleMoves.push(x);
               updated[x] = `${updated[x]}c`
@@ -287,7 +289,7 @@ export default function Board() {
 
         // to search up
         let pieceAbove = false
-        for(let x = i - 8; x > 0; x -= 8){
+        for(let x = i - 8; x >= 0; x -= 8){
           if(pieceAbove){
             break
           }
