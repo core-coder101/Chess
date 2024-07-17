@@ -218,7 +218,7 @@ export default function Board() {
         switch (type) {
           case 'p':
             const pos = position - 1; // Convert to 0-based index
-            if (pos >= 9 && pos <= 16) { // First row for pawns
+            if (pos >= 8 && pos <= 15) { // First row for pawns
               searchIndexes = [pos + 8, pos + 16]; // Forward move and double move
               captureSearchIndexes = [pos + 7, pos + 9]; // Diagonal captures
             } else {
@@ -264,170 +264,168 @@ export default function Board() {
 
       // universal pieces
       let updated = board
-      switch(true){
-        case (type === 'r' || type === 'q'):
-          let i = pos
+      // switch was giving me a lot of trouble so we're back to if statements
+      if ((type === 'r' || type === 'q')){
+        let i = pos
 
-          // to search down
-          let pieceBelow = false
-          for(let x = i + 8; x <= 64; x += 8){
-            if(pieceBelow){
-              break
-            }
-            if(board[x] != ""){
-              pieceBelow = true
-              if(board[x].charAt(0) !== color){
-                possibleMoves.push(x);
-                updated[x] = `${updated[x]}c`
-              }
-            } else {
-              updated[x] = 'h'
-            }
+        // to search down
+        let pieceBelow = false
+        for(let x = i + 8; x <= 64; x += 8){
+          if(pieceBelow){
+            break
           }
+          if(board[x] != ""){
+            pieceBelow = true
+            if(board[x].charAt(0) !== color){
+              possibleMoves.push(x);
+              updated[x] = `${updated[x]}c`
+            }
+          } else {
+            updated[x] = 'h'
+          }
+        }
 
-          // to search up
-          let pieceAbove = false
-          for(let x = i - 8; x > 0; x -= 8){
-            if(pieceAbove){
-              break
-            }
-            if(board[x] != ""){
-              pieceAbove = true
-              if(board[x].charAt(0) !== color){
-                possibleMoves.push(x);
-                updated[x] = `${updated[x]}c`
-              }
-            } else {
-              updated[x] = 'h'
-            }
+        // to search up
+        let pieceAbove = false
+        for(let x = i - 8; x > 0; x -= 8){
+          if(pieceAbove){
+            break
           }
+          if(board[x] != ""){
+            pieceAbove = true
+            if(board[x].charAt(0) !== color){
+              possibleMoves.push(x);
+              updated[x] = `${updated[x]}c`
+            }
+          } else {
+            updated[x] = 'h'
+          }
+        }
 
-          // to search right
-          let pieceRight = false
-          for(let x = i + 1; (x % 8) !== 0; x += 1){
-            if(pieceRight){
-              break
-            }
-            if(board[x] != ""){
-              pieceRight = true
-              if(board[x].charAt(0) !== color){
-                possibleMoves.push(x);
-                updated[x] = `${updated[x]}c`
-              }
-            } else {
-              updated[x] = 'h'
-            }
+        // to search right
+        let pieceRight = false
+        for(let x = i + 1; (x % 8) !== 0; x += 1){
+          if(pieceRight){
+            break
           }
+          if(board[x] != ""){
+            pieceRight = true
+            if(board[x].charAt(0) !== color){
+              possibleMoves.push(x);
+              updated[x] = `${updated[x]}c`
+            }
+          } else {
+            updated[x] = 'h'
+          }
+        }
 
-          // to search left
-          let pieceLeft = false
-          for(let x = i - 1; (x % 8) !== 7 && x >= 0; x -= 1){
-            if(pieceLeft){
-              break
-            }
-            if(board[x] != ""){
-              pieceLeft = true
-              if(board[x].charAt(0) !== color){
-                possibleMoves.push(x);
-                updated[x] = `${updated[x]}c`
-              }
-            } else {
-              updated[x] = 'h'
-            }
+        // to search left
+        let pieceLeft = false
+        for(let x = i - 1; (x % 8) !== 7 && x >= 0; x -= 1){
+          if(pieceLeft){
+            break
           }
-          let newArr = Array.from(updated);
-          setBoard(newArr);
-          break
-        case (type === 'b' || type === 'q'):
-
-          // to search bottom right
-          let pieceBottomRight = false;
-          for(let x = pos + 9; x < 64 && (x % 8 !== 0); x += 9){
-            if(pieceBottomRight){
-              break;
+          if(board[x] != ""){
+            pieceLeft = true
+            if(board[x].charAt(0) !== color){
+              possibleMoves.push(x);
+              updated[x] = `${updated[x]}c`
             }
-            if(board[x] !== ""){
-              pieceBottomRight = true;
-              if(board[x].charAt(0) !== color){
-                possibleMoves.push(x);
-                updated[x] = `${updated[x]}c`;
-              }
-            } else {
-              updated[x] = 'h';
-            }
+          } else {
+            updated[x] = 'h'
           }
-        
-          // to search top left
-          let pieceTopLeft = false;
-          for(let x = pos - 9; x >= 0 && (x % 8 !== 7); x -= 9){
-            if(pieceTopLeft){
-              break;
-            }
-            if(board[x] !== ""){
-              pieceTopLeft = true;
-              if(board[x].charAt(0) !== color){
-                possibleMoves.push(x);
-                updated[x] = `${updated[x]}c`;
-              }
-            } else {
-              updated[x] = 'h';
-            }
-          }
-        
-          // to search bottom left
-          let pieceBottomLeft = false;
-          for(let x = pos + 7; x < 64 && (x % 8 !== 7); x += 7){
-            if(pieceBottomLeft){
-              break;
-            }
-            if(board[x] !== ""){
-              pieceBottomLeft = true;
-              if(board[x].charAt(0) !== color){
-                possibleMoves.push(x);
-                updated[x] = `${updated[x]}c`;
-              }
-            } else {
-              updated[x] = 'h';
-            }
-          }
-        
-          // to search top right
-          let pieceTopRight = false;
-          for(let x = pos - 7; x >= 0 && (x % 8 !== 0); x -= 7){
-            if(pieceTopRight){
-              break;
-            }
-            if(board[x] !== ""){
-              pieceTopRight = true;
-              if(board[x].charAt(0) !== color){
-                possibleMoves.push(x);
-                updated[x] = `${updated[x]}c`;
-              }
-            } else {
-              updated[x] = 'h';
-            }
-          }
-        
-          let newArr2 = Array.from(updated);
-          setBoard(newArr2);
-          break;
-        case (type === 'k'):
-          captureSearchIndexes = [pos + 7, pos - 7, pos + 8, pos - 8, pos + 9, pos - 9, pos + 1, pos - 1]
-          captureSearchIndexes.map(index => {
-            if(index >= 0 && index < 64){
-              if(updated[index] === ""){
-                updated[index] = "h"
-              } else if(updated[index].charAt(0) !== color) {
-                updated[index] = `${updated[index]}c`
-              }
-            }
-          })
-          let newArr3 = Array.from(updated);
-          setBoard(newArr3);
-          break
-
+        }
+        let newArr = Array.from(updated);
+        setBoard(newArr);
       }
-    }
+      if((type === 'b' || type === 'q')){
+
+        // to search bottom right
+        let pieceBottomRight = false;
+        for(let x = pos + 9; x < 64 && (x % 8 !== 0); x += 9){
+          if(pieceBottomRight){
+            break;
+          }
+          if(board[x] !== ""){
+            pieceBottomRight = true;
+            if(board[x].charAt(0) !== color){
+              possibleMoves.push(x);
+              updated[x] = `${updated[x]}c`;
+            }
+          } else {
+            updated[x] = 'h';
+          }
+        }
+      
+        // to search top left
+        let pieceTopLeft = false;
+        for(let x = pos - 9; x >= 0 && (x % 8 !== 7); x -= 9){
+          if(pieceTopLeft){
+            break;
+          }
+          if(board[x] !== ""){
+            pieceTopLeft = true;
+            if(board[x].charAt(0) !== color){
+              possibleMoves.push(x);
+              updated[x] = `${updated[x]}c`;
+            }
+          } else {
+            updated[x] = 'h';
+          }
+        }
+      
+        // to search bottom left
+        let pieceBottomLeft = false;
+        for(let x = pos + 7; x < 64 && (x % 8 !== 7); x += 7){
+          if(pieceBottomLeft){
+            break;
+          }
+          if(board[x] !== ""){
+            pieceBottomLeft = true;
+            if(board[x].charAt(0) !== color){
+              possibleMoves.push(x);
+              updated[x] = `${updated[x]}c`;
+            }
+          } else {
+            updated[x] = 'h';
+          }
+        }
+      
+        // to search top right
+        let pieceTopRight = false;
+        for(let x = pos - 7; x >= 0 && (x % 8 !== 0); x -= 7){
+          if(pieceTopRight){
+            break;
+          }
+          if(board[x] !== ""){
+            pieceTopRight = true;
+            if(board[x].charAt(0) !== color){
+              possibleMoves.push(x);
+              updated[x] = `${updated[x]}c`;
+            }
+          } else {
+            updated[x] = 'h';
+          }
+        }
+      
+        let newArr2 = Array.from(updated);
+        setBoard(newArr2);
+      }
+      if(type === 'k'){
+        captureSearchIndexes = [pos + 7, pos - 7, pos + 8, pos - 8, pos + 9, pos - 9, pos + 1, pos - 1]
+        captureSearchIndexes.map(index => {
+          if(index >= 0 && index < 64){
+            if(updated[index] === ""){
+              updated[index] = "h"
+            } else if(updated[index].charAt(0) !== color) {
+              updated[index] = `${updated[index]}c`
+            }
+          }
+        })
+        let newArr3 = Array.from(updated);
+        setBoard(newArr3);
+      }
+      }
   }, [selectedPiece]);
 
 
