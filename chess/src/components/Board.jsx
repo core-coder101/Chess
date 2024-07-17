@@ -12,12 +12,12 @@ const initialBoard = [
   'wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr',
 ];
 
-const boardForRookTest = [
+const boardForBishopTest = [
   '', '', '', '', '', '', '', '',
-  '', '', '', '', 'br', '', '', '',
+  '', '', '', 'bb', 'bb', '', '', '',
   '', '', '', '', '', '', '', '',
   '', '', '', '', '', '', '', '',
-  '', '', '', '', 'wr', '', '', '',
+  '', '', '', 'wb', 'wb', '', '', '',
   '', '', '', '', '', '', '', '',
   '', '', '', '', '', '', '', '',
   '', '', '', '', '', '', '', '',
@@ -338,6 +338,80 @@ export default function Board() {
           let newArr = Array.from(updated)
           setBoard(newArr)
           console.log("captureSearchIndexes: ", captureSearchIndexes);
+        case 'b':
+        
+          // to search bottom right
+          let pieceBottomRight = false;
+          for(let x = pos + 9; x < 64 && (x % 8 !== 0); x += 9){
+            if(pieceBottomRight){
+              break;
+            }
+            if(board[x] !== ""){
+              pieceBottomRight = true;
+              if(board[x].charAt(0) !== color){
+                possibleMoves.push(x);
+                updated[x] = `${updated[x]}c`;
+              }
+            } else {
+              updated[x] = 'h';
+            }
+          }
+        
+          // to search top left
+          let pieceTopLeft = false;
+          for(let x = pos - 9; x >= 0 && (x % 8 !== 7); x -= 9){
+            if(pieceTopLeft){
+              break;
+            }
+            if(board[x] !== ""){
+              pieceTopLeft = true;
+              if(board[x].charAt(0) !== color){
+                possibleMoves.push(x);
+                updated[x] = `${updated[x]}c`;
+              }
+            } else {
+              updated[x] = 'h';
+            }
+          }
+        
+          // to search bottom left
+          let pieceBottomLeft = false;
+          for(let x = pos + 7; x < 64 && (x % 8 !== 7); x += 7){
+            if(pieceBottomLeft){
+              break;
+            }
+            if(board[x] !== ""){
+              pieceBottomLeft = true;
+              if(board[x].charAt(0) !== color){
+                possibleMoves.push(x);
+                updated[x] = `${updated[x]}c`;
+              }
+            } else {
+              updated[x] = 'h';
+            }
+          }
+        
+          // to search top right
+          let pieceTopRight = false;
+          for(let x = pos - 7; x >= 0 && (x % 8 !== 0); x -= 7){
+            if(pieceTopRight){
+              break;
+            }
+            if(board[x] !== ""){
+              pieceTopRight = true;
+              if(board[x].charAt(0) !== color){
+                possibleMoves.push(x);
+                updated[x] = `${updated[x]}c`;
+              }
+            } else {
+              updated[x] = 'h';
+            }
+          }
+        
+          let newArr2 = Array.from(updated);
+          setBoard(newArr2);
+          console.log("captureSearchIndexes: ", captureSearchIndexes);
+          break;          
       }
     }
   }, [selectedPiece]);
@@ -345,7 +419,7 @@ export default function Board() {
 
 
   const   getBoardFromHistory = (history) => {
-    let boardToSend = initialBoard
+    let boardToSend = boardForBishopTest
     let capturedPieces = []
     if(!history.length > 0){
       return { boardToSend, capturedPieces }
