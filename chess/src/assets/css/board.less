@@ -1,0 +1,152 @@
+:root {
+    /* don't add width, only use height and let aspect-ratio do the rest */
+    --board-width: 90%; 
+    --board-height: 90vh;
+}
+
+.rotate{
+    transform: rotate(180deg);
+}
+
+.board{
+    height: var(--board-height);
+    background-image: url(https://assets-themes.chess.com/image/9rdwe/200.png );
+    object-fit: scale-down;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    position: relative;
+    aspect-ratio: 1;
+}
+
+@media (max-width: 576px){
+    .board{
+        height: unset; // I beleive 'auto' an 'unset' are different things
+        width: var(--board-width);
+    }
+}
+
+.board-grid{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    display: flex;
+    flex-wrap: wrap;
+}
+.piece {
+    background-size: 100%;
+    width: 12.5%;
+    height: 12.5%;
+    cursor: pointer;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+.possible-move{
+    background-color: rgba(0, 0, 255, 0.308);
+    background-size: 100%;
+    width: 12.5%;
+    height: 12.5%;
+    cursor: pointer;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+.capturable{
+    background-color: rgba(255, 0, 0, 0.308);
+    background-size: 100%;
+    width: 12.5%;
+    height: 12.5%;
+    cursor: pointer;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+/* black pieces */
+.piece.br{
+    background-image: url(https://assets-themes.chess.com/image/ejgfv/150/br.png);
+}
+.piece.bb{
+    background-image: url(https://assets-themes.chess.com/image/ejgfv/150/bb.png);
+}
+.piece.bn{
+    background-image: url(https://assets-themes.chess.com/image/ejgfv/150/bn.png);
+}
+.piece.bk{
+    background-image: url(https://assets-themes.chess.com/image/ejgfv/150/bk.png);
+}
+.piece.bq{
+    background-image: url(https://assets-themes.chess.com/image/ejgfv/150/bq.png);
+}
+.piece.bp{
+    background-image: url(https://assets-themes.chess.com/image/ejgfv/150/bp.png);
+}
+
+/* white pieces */
+.piece.wr{
+    background-image: url(https://assets-themes.chess.com/image/ejgfv/150/wr.png);
+}
+.piece.wb{
+    background-image: url(https://assets-themes.chess.com/image/ejgfv/150/wb.png);
+}
+.piece.wn{
+    background-image: url(https://assets-themes.chess.com/image/ejgfv/150/wn.png);
+}
+.piece.wk{
+    background-image: url(https://assets-themes.chess.com/image/ejgfv/150/wk.png);
+}
+.piece.wq{
+    background-image: url(https://assets-themes.chess.com/image/ejgfv/150/wq.png);
+}
+.piece.wp{
+    background-image: url(https://assets-themes.chess.com/image/ejgfv/150/wp.png);
+}
+
+
+.selected-piece{
+    background-color: rgba(255, 255, 0, 0.295);
+}
+
+/* positioning */
+
+// Define the loop mixin
+.generate-classes(@index, @outerIndex) when (@index > 0) {
+    // Calculate the class number
+    
+    @class: @index + @outerIndex * 8;
+    .square-@{class} {
+        transform: translate((@index - 1) * 100%, @outerIndex * 100%);
+    }
+    .rotate .square-@{class} {
+        transform: translate((@index - 1) * 100%, @outerIndex * 100%) rotate(180deg);
+    }
+    // Call the mixin recursively with the index decremented
+    .generate-classes(@index - 1, @outerIndex);
+}
+
+.Outer-loop(@outerIndex) when (@outerIndex >= 0) {
+    .generate-classes(8, @outerIndex);
+    // Call the mixin recursively with the outer index decremented
+    .Outer-loop(@outerIndex - 1);
+}
+
+// Start the loop
+.Outer-loop(7);
+
+/* 
+    board pic: https://assets-themes.chess.com/image/9rdwe/200.png 
+    bb: https://assets-themes.chess.com/image/ejgfv/150/bb.png
+    bk: https://assets-themes.chess.com/image/ejgfv/150/bk.png
+    bn: https://assets-themes.chess.com/image/ejgfv/150/bn.png
+    bp: https://assets-themes.chess.com/image/ejgfv/150/bp.png
+    bq: https://assets-themes.chess.com/image/ejgfv/150/bq.png
+    br: https://assets-themes.chess.com/image/ejgfv/150/br.png
+
+    wb: https://assets-themes.chess.com/image/ejgfv/150/wb.png
+    wk: https://assets-themes.chess.com/image/ejgfv/150/wk.png
+    wn: https://assets-themes.chess.com/image/ejgfv/150/wn.png
+    wp: https://assets-themes.chess.com/image/ejgfv/150/wp.png
+    wq: https://assets-themes.chess.com/image/ejgfv/150/wq.png
+    wr: https://assets-themes.chess.com/image/ejgfv/150/wr.png
+*/
