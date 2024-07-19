@@ -58,14 +58,16 @@ const BoardMapper = ({ board, selectedPiece, setSelectedPiece, turn }) => {
   });
 }
 
-const capture = new Audio('/assets/audio/capture.mp3');
-const castle = new Audio('/assets/audio/castle.mp3');
-const check = new Audio('/assets/audio/check.mp3');
-const checkMate = new Audio('/assets/audio/checkMate.mp3');
-const gameOver = new Audio('/assets/audio/gameOver.mp3');
-const gameStart = new Audio('/assets/audio/gameStart.mp3');
-const moveAudio = new Audio('/assets/audio/move.mp3');
-const stalemate = new Audio('/assets/audio/stalemate.mp3');
+const basePath = import.meta.env.VITE_BASE_PATH
+
+const capture = new Audio(basePath + '/assets/audio/capture.mp3');
+const castle = new Audio(basePath + '/assets/audio/castle.mp3');
+const check = new Audio(basePath + '/assets/audio/check.mp3');
+const checkMate = new Audio(basePath + 'assets/audio/checkMate.mp3');
+const gameOver = new Audio(basePath + '/assets/audio/gameOver.mp3');
+const gameStart = new Audio(basePath + '/assets/audio/gameStart.mp3');
+const moveAudio = new Audio(basePath + '/assets/audio/move.mp3');
+const stalemate = new Audio(basePath + '/assets/audio/stalemate.mp3');
 
 export default function Board() {
   const emptyPieceState = {
@@ -587,6 +589,9 @@ export default function Board() {
 
 
   useEffect(() => {
+    if(!(moveHistory.length > 0)){
+      return
+    }
     const { boardToSend, capturedPieces } = getBoardFromHistory(moveHistory)
     const newArr = Array.from(boardToSend)
     setBoard(newArr)
