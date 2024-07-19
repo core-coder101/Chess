@@ -47,28 +47,6 @@ const BoardMapper = ({ board, selectedPiece, setSelectedPiece, turn }) => {
     }
   });
 }
-
-const exampleHistory = [
-  {
-      "piece": "wp",
-      "from": 53,
-      "to": 37,
-      "captured": null
-  },
-  {
-      "piece": "bp",
-      "from": 14,
-      "to": 30,
-      "captured": null
-  },
-  {
-      "piece": "wp",
-      "from": 37,
-      "to": 30,
-      "captured": "bp"
-  }
-]
-
 export default function Board() {
   const emptyPieceState = {
     piece: "",
@@ -79,7 +57,8 @@ export default function Board() {
   const [board, setBoard] = useState(initialBoard);
   const [turn, setTurn] = useState(true);
   const [moveHistory, setMoveHistory] = useState([]); // State for move history
-
+  const [checked, setChecked] = useState(false)
+  const [legalMoves, setLegalMoves] = useState([])
   const move = (squareClass) => {
     const movePosition = parseInt(squareClass.split('-')[1])
     const moveIndex = movePosition - 1
@@ -95,14 +74,14 @@ export default function Board() {
       }
     ]);
 
-    setTurn(prev => !prev)
     setSelectedPiece(emptyPieceState)
   }
 
-  const calculatePossibleMoves = (color, type, pos) => {
+  const calculatePossibleMoves = (localBoard, color, type, pos) => {
     const position = pos + 1
     // const position = selectedPiece.position;
     let possibleMoves = [];
+    let nonCapturingMoves = [] // only pawns do that ig
     let searchIndexes = [];
     let captureSearchIndexes = [];
     // const pos = position - 1; // Convert to 0-based index
@@ -126,25 +105,15 @@ export default function Board() {
           }
           let pieceIsInFront = false;
           searchIndexes.forEach(index => {
-            if (index >= 0 && board[index] === "" && !pieceIsInFront) {
-              possibleMoves.push(index);
-              setBoard(prevBoard => [
-                ...prevBoard.slice(0, index),
-                'h',
-                ...prevBoard.slice(index + 1)
-              ]);
+            if (index >= 0 && localBoard[index] === "" && !pieceIsInFront) {
+              nonCapturingMoves.push(index);
             } else {
               pieceIsInFront = true;
             }
           });
           captureSearchIndexes.forEach(index => {
-            if (index >= 0 && board[index] !== "" && board[index].charAt(0) !== color) {
+            if (index >= 0 && localBoard[index] !== "" && localBoard[index].charAt(0) !== color) {
               possibleMoves.push(index);
-              setBoard(prevBoard => [
-                ...prevBoard.slice(0, index),
-                `${prevBoard[index]}c`,
-                ...prevBoard.slice(index + 1)
-              ]);
             }
           });
           break;
@@ -166,32 +135,22 @@ export default function Board() {
           }
           // Edge cases for captures
           if ((pos % 8) === 0) { // Right edge
-            captureSearchIndexes = captureSearchIndexes.filter(idx => idx !== pos + 9);
+            captureSearchIndexes = captureSearchIndexes.filter(idx => idx !== pos + 7);
           }
           if ((pos % 8) === 1) { // Left edge
-            captureSearchIndexes = captureSearchIndexes.filter(idx => idx !== pos + 7);
+            captureSearchIndexes = captureSearchIndexes.filter(idx => idx !== pos + 9);
           }
           let pieceIsInFront = false;
           searchIndexes.forEach(index => {
-            if (index >= 0 && board[index] === "" && !pieceIsInFront) {
-              possibleMoves.push(index);
-              setBoard(prevBoard => [
-                ...prevBoard.slice(0, index),
-                'h',
-                ...prevBoard.slice(index + 1)
-              ]);
+            if (index >= 0 && localBoard[index] === "" && !pieceIsInFront) {
+              nonCapturingMoves.push(index);
             } else {
               pieceIsInFront = true;
             }
           });
           captureSearchIndexes.forEach(index => {
-            if (index >= 0 && board[index] !== "" && board[index].charAt(0) !== color) {
+            if (index >= 0 && localBoard[index] !== "" && localBoard[index].charAt(0) !== color) {
               possibleMoves.push(index);
-              setBoard(prevBoard => [
-                ...prevBoard.slice(0, index),
-                `${prevBoard[index]}c`,
-                ...prevBoard.slice(index + 1)
-              ]);
             }
           });
           break;
@@ -202,7 +161,6 @@ export default function Board() {
     }
 
     // universal pieces
-    let updated = board
     // switch was giving me a lot of trouble so we're back to if statements
     if ((type === 'r' || type === 'q')){
       let i = pos
@@ -213,14 +171,13 @@ export default function Board() {
         if(pieceBelow){
           break
         }
-        if(board[x] != ""){
+        if(localBoard[x] != ""){
           pieceBelow = true
-          if(board[x].charAt(0) !== color){
+          if(localBoard[x].charAt(0) !== color){
             possibleMoves.push(x);
-            updated[x] = `${updated[x]}c`
           }
         } else {
-          updated[x] = 'h'
+          possibleMoves.push(x);
         }
       }
 
@@ -230,14 +187,13 @@ export default function Board() {
         if(pieceAbove){
           break
         }
-        if(board[x] != ""){
+        if(localBoard[x] != ""){
           pieceAbove = true
-          if(board[x].charAt(0) !== color){
+          if(localBoard[x].charAt(0) !== color){
             possibleMoves.push(x);
-            updated[x] = `${updated[x]}c`
           }
         } else {
-          updated[x] = 'h'
+          possibleMoves.push(x);
         }
       }
 
@@ -247,14 +203,13 @@ export default function Board() {
         if(pieceRight){
           break
         }
-        if(board[x] != ""){
+        if(localBoard[x] != ""){
           pieceRight = true
-          if(board[x].charAt(0) !== color){
+          if(localBoard[x].charAt(0) !== color){
             possibleMoves.push(x);
-            updated[x] = `${updated[x]}c`
           }
         } else {
-          updated[x] = 'h'
+          possibleMoves.push(x);
         }
       }
 
@@ -264,18 +219,15 @@ export default function Board() {
         if(pieceLeft){
           break
         }
-        if(board[x] != ""){
+        if(localBoard[x] != ""){
           pieceLeft = true
-          if(board[x].charAt(0) !== color){
+          if(localBoard[x].charAt(0) !== color){
             possibleMoves.push(x);
-            updated[x] = `${updated[x]}c`
           }
         } else {
-          updated[x] = 'h'
+          possibleMoves.push(x);
         }
       }
-      let newArr = Array.from(updated);
-      setBoard(newArr);
     }
     if((type === 'b' || type === 'q')){
 
@@ -285,14 +237,13 @@ export default function Board() {
         if(pieceBottomRight){
           break;
         }
-        if(board[x] !== ""){
+        if(localBoard[x] !== ""){
           pieceBottomRight = true;
-          if(board[x].charAt(0) !== color){
+          if(localBoard[x].charAt(0) !== color){
             possibleMoves.push(x);
-            updated[x] = `${updated[x]}c`;
           }
         } else {
-          updated[x] = 'h';
+          possibleMoves.push(x);
         }
       }
     
@@ -302,14 +253,13 @@ export default function Board() {
         if(pieceTopLeft){
           break;
         }
-        if(board[x] !== ""){
+        if(localBoard[x] !== ""){
           pieceTopLeft = true;
-          if(board[x].charAt(0) !== color){
+          if(localBoard[x].charAt(0) !== color){
             possibleMoves.push(x);
-            updated[x] = `${updated[x]}c`;
           }
         } else {
-          updated[x] = 'h';
+          possibleMoves.push(x);
         }
       }
     
@@ -319,14 +269,13 @@ export default function Board() {
         if(pieceBottomLeft){
           break;
         }
-        if(board[x] !== ""){
+        if(localBoard[x] !== ""){
           pieceBottomLeft = true;
-          if(board[x].charAt(0) !== color){
+          if(localBoard[x].charAt(0) !== color){
             possibleMoves.push(x);
-            updated[x] = `${updated[x]}c`;
           }
         } else {
-          updated[x] = 'h';
+          possibleMoves.push(x);
         }
       }
     
@@ -336,33 +285,27 @@ export default function Board() {
         if(pieceTopRight){
           break;
         }
-        if(board[x] !== ""){
+        if(localBoard[x] !== ""){
           pieceTopRight = true;
-          if(board[x].charAt(0) !== color){
+          if(localBoard[x].charAt(0) !== color){
             possibleMoves.push(x);
-            updated[x] = `${updated[x]}c`;
           }
         } else {
-          updated[x] = 'h';
+          possibleMoves.push(x);
         }
       }
-    
-      let newArr2 = Array.from(updated);
-      setBoard(newArr2);
     }
     if(type === 'k'){
       captureSearchIndexes = [pos + 7, pos - 7, pos + 8, pos - 8, pos + 9, pos - 9, pos + 1, pos - 1]
       captureSearchIndexes.map(index => {
         if(index >= 0 && index < 64){
-          if(updated[index] === ""){
-            updated[index] = "h"
-          } else if(updated[index].charAt(0) !== color) {
-            updated[index] = `${updated[index]}c`
+          if(localBoard[index] === ""){
+            possibleMoves.push(index);
+          } else if(localBoard[index].charAt(0) !== color) {
+            possibleMoves.push(index);
           }
         }
       })
-      let newArr3 = Array.from(updated);
-      setBoard(newArr3);
     }
     if(type === 'n'){
       const topRight = pos - 15
@@ -379,20 +322,15 @@ export default function Board() {
       const distanceFromTop = Math.floor(position / 8)
       const distanceFromBottom = Math.floor((64 - position) / 8)
 
-      console.log("distanceFromRight: ", distanceFromRight);
-      console.log("distanceFromLeft: ", distanceFromLeft);
-      console.log("distanceFromTop ", distanceFromTop);
-      console.log("distanceFromBottom: ", distanceFromBottom);
-
         // im just gonna go one-by-one and define conditions for each of the possible move
         // later we will know what condiitions are in common and merge them ig
 
         const setPossibleMove = (index) => {
           possibleMoves.push(topRight)
-          if(updated[index] === ""){
-            updated[index] = "h"
-          } else if(updated[index].charAt(0) !== color) {
-            updated[index] = `${updated[index]}c`
+          if(localBoard[index] === ""){
+            possibleMoves.push(index);
+          } else if(localBoard[index].charAt(0) !== color) {
+            possibleMoves.push(index);
           }
         }
         
@@ -427,29 +365,124 @@ export default function Board() {
       if(distanceFromTop > 1 && distanceFromLeft > 0){
         setPossibleMove(topLeft)
       }
-
-
-      let newArr4 = Array.from(updated)
-      setBoard(newArr4)
     }
+
+    return [
+    (possibleMoves.filter(move => {
+      return (move >= 0 && move < 64);
+    })),
+    (nonCapturingMoves.filter(move => {
+      return (move >= 0 && move < 64);
+    }))]
   }
 
-  const checkForCheck = () => {
+  const highlightSquares = (possibleMoves) => {
+    let updated = board
+    possibleMoves.forEach(moveIndex => {
+      if(!(moveIndex >= 0 && moveIndex < 64)){
+        return
+      }
+      let opponentColor = (turn ? 'b' : 'w')
+      if(updated[moveIndex] !== ""){
+        if(updated[moveIndex].charAt(0) === opponentColor){
+          updated[moveIndex] = `${updated[moveIndex]}c`
+        }
+      } else {
+        updated[moveIndex] = "h"
+      }
+      
+      let newArr = Array.from(updated)
+      setBoard(newArr)
+    })
+  }
+
+  const checkForCheck = (localBoard ) => {
     const opponentColor = (turn ? 'b' : 'w')
-    board.forEach((piece, index) => {
-      if(piece === ""){
+    const color = (turn ? 'w' : 'b')
+    const kingIndex = localBoard.findIndex((piece) => (piece?.charAt(0) === color && piece.charAt(1) === 'k'))
+    let localChecked = false
+    localBoard.forEach((piece, index) => {
+      if(piece === "" || localChecked){
         return
       }
       if(piece.charAt(0) === opponentColor){
         const type = piece.charAt(1);
-        let possibleMoves = calculatePossibleMoves(opponentColor, type, index)
+        let [possibleMoves] = calculatePossibleMoves(localBoard, opponentColor, type, index)
+        if(piece == 'wb'){
+        }
+        if(possibleMoves.includes(kingIndex)){
+          localChecked = true
+          return
+        }
+      } else {
+        return
       }
     })
+    return localChecked
+  }
+
+  const simulateMove = (pieceIndex, moveIndex) => {
+    let currentBoard = [...board]
+    // I'm gonna clean out the board as well, just in case some useless thing was left in there
+    currentBoard =  currentBoard.map(square => {
+      if(square === ""){
+        return square
+      }
+      const splitted = square.split("")
+      if(splitted.includes("h")){
+        return ''
+      } else if(splitted.includes("c")) {
+        return `${splitted[0]}${splitted[1]}`
+      } else {
+        return square
+      }
+    })
+    let piece = currentBoard[pieceIndex]
+    if(piece === 'bn'){
+    }
+    currentBoard[pieceIndex] = "";
+    currentBoard[moveIndex] = piece;
+    if(piece === 'bn'){
+    }
+    let inCheck = checkForCheck(currentBoard);
+
+    return inCheck
+  }
+
+  const legalMovesUnderCheck = () => {
+    const color = (turn ? 'w' : 'b')
+    let legalMoves = []
+    board.forEach((piece, index) => {
+      if(piece === ""){
+        return
+      }
+      if(piece.charAt(0) === color){
+        const type = piece.charAt(1);
+        let [possibleMoves, nonCapturingMoves] = calculatePossibleMoves(board, color, type, index)
+        // now i map possibleMoves and check if any of these moves will remove the king from being checked and push it to legalMoves i guess?
+        let temp = [...possibleMoves, ...nonCapturingMoves]
+        temp.forEach(moveIndex => {
+          if(!(moveIndex >= 0 && moveIndex < 64)){
+            return
+          }
+          let inCheck = simulateMove(index, moveIndex)
+          if(!inCheck){
+            legalMoves.push({moveIndex, piece, index})
+          }
+        })
+      } else {
+        return
+      }
+    })
+
+    return legalMoves
   }
 
   useEffect(()=> {
     // Each time a move is made, we check for checks, checkmates, stalemates, etc.
-    checkForCheck()
+    const localChecked = checkForCheck(board)
+    setChecked(localChecked)
+    setLegalMoves(legalMovesUnderCheck())
   }, [turn])
 
   useEffect(() => {
@@ -497,11 +530,15 @@ export default function Board() {
     if (selectedPiece.piece && selectedPiece.position) {
       const [color, type] = selectedPiece.piece.split('');
       const position = selectedPiece.position
-        calculatePossibleMoves(color, type, (position - 1))
+        let [possibleMoves, nonCapturingMoves] = calculatePossibleMoves(board, color, type, (position - 1))
+        let tempArr = [...possibleMoves, ...nonCapturingMoves].filter(moveIndex => {
+          return (legalMoves.filter(move => {
+            return (move.piece === selectedPiece.piece && move.index === (position - 1) && move.moveIndex === moveIndex)
+          }).length > 0)
+        })
+        highlightSquares(tempArr)
       }
   }, [selectedPiece]);
-
-
 
   const getBoardFromHistory = (history) => {
     let boardToSend = initialBoard
@@ -528,12 +565,13 @@ export default function Board() {
     const { boardToSend, capturedPieces } = getBoardFromHistory(moveHistory)
     const newArr = Array.from(boardToSend)
     setBoard(newArr)
+    setTurn(prev => !prev) // inversing the turn AFTER we update board
   }, [moveHistory])
 
 
 
   return (
-    <div className='board'> {/* 'rotate' class is working now, */}
+    <div className={'board ' + (checked ? 'check-' + (turn ? "w" : "b") + "k" : "")}> {/* 'rotate' class is working now, */}
       <div className='board-grid' id='board-grid'>
         <BoardMapper board={board} selectedPiece={selectedPiece} setSelectedPiece={setSelectedPiece} turn={turn} />
       </div>
