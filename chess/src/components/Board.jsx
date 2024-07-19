@@ -4,12 +4,22 @@ import "../assets/css/board.less";
 const initialBoard = [
   'br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br',
   'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 
-  '', '', '', '', '', '', '', '',
-  '', '', '', '', '', '', '', '',
-  '', '', '', '', '', '', '', '',
-  '', '', '', '', '', '', '', '',
+  '',    '',   '',   '',   '',   '',   '',   '',
+  '',    '',   '',   '',   '',   '',   '',   '',
+  '',    '',   '',   '',   '',   '',   '',   '',
+  '',    '',   '',   '',   '',   '',   '',   '',
   'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp',
   'wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr',
+];
+const checkMateTesting = [
+  'br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br',
+  'bp', 'bp', 'bp', 'bp', '', 'bp', 'bp', 'bp', 
+  '',    '',   '',   '',   '',   '',   '',   '',
+  '',    '',   '',   '',   'bp',   '',   '',   'wq',
+  '',    '',   'wb',   '',   'wp',   '',   '',   '',
+  '',    '',   '',   '',   '',   '',   '',   '',
+  'wp', 'wp', 'wp', 'wp', '', 'wp', 'wp', 'wp',
+  'wr', 'wn', 'wb', '', 'wk', '', 'wn', 'wr',
 ];
 
 const BoardMapper = ({ board, selectedPiece, setSelectedPiece, turn }) => {
@@ -47,6 +57,17 @@ const BoardMapper = ({ board, selectedPiece, setSelectedPiece, turn }) => {
     }
   });
 }
+
+const capture = new Audio('../src/assets/audio/capture.mp3')
+const castle = new Audio('../src/assets/audio/castle.mp3')
+const check = new Audio('../src/assets/audio/check.mp3')
+const checkMate = new Audio('../src/assets/audio/checkMate.mp3')
+const gameOver = new Audio('../src/assets/audio/gameOver.mp3')
+const gameStart = new Audio('../src/assets/audio/gameStart.mp3')
+const moveAudio = new Audio('../src/assets/audio/move.mp3')
+const stalemate = new Audio('../src/assets/audio/stalemate.mp3')
+
+
 export default function Board() {
   const emptyPieceState = {
     piece: "",
@@ -60,11 +81,7 @@ export default function Board() {
   const [checked, setChecked] = useState(false)
   const [legalMoves, setLegalMoves] = useState([])
 
-  const gameStarted = new Audio('../src/assets/audio/gameStart.mp3')
-  const moveAudio = new Audio('../src/assets/audio/move.mp3')
-
   const move = (squareClass) => {
-    moveAudio.play()
     const movePosition = parseInt(squareClass.split('-')[1])
     const moveIndex = movePosition - 1
 
@@ -75,15 +92,15 @@ export default function Board() {
         piece: selectedPiece.piece,
         from: selectedPiece.position - 1,
         to: moveIndex,
-        captured: board[moveIndex] !== "" ? board[moveIndex] : null
+        captured: (board[moveIndex] !== "" && board[moveIndex] !== "h") ? board[moveIndex].split("")[0]+board[moveIndex].split("")[1] : ""
       }
     ]);
-
     setSelectedPiece(emptyPieceState)
+
   }
 
   useEffect(() => {
-    gameStarted.play()
+    gameStart.play()
   }, [])
 
   const calculatePossibleMoves = (localBoard, color, type, pos) => {
@@ -96,8 +113,7 @@ export default function Board() {
     // const pos = position - 1; // Convert to 0-based index
 
     if (color === 'w') {
-      switch (type) {
-        case 'p':
+      if(type === 'p'){
           if (pos >= 48 && pos <= 55) { // First row for pawns
             searchIndexes = [pos - 8, pos - 16]; // Forward move and double move
             captureSearchIndexes = [pos - 7, pos - 9]; // Diagonal captures
@@ -125,15 +141,9 @@ export default function Board() {
               possibleMoves.push(index);
             }
           });
-          break;
-        // Add logic for other pieces as needed
-        default:
-          break;
       }
     } else {
-      // Logic for black pieces can be added here
-      switch (type) {
-        case 'p':
+      if(type === 'p'){
           const pos = position - 1; // Convert to 0-based index
           if (pos >= 8 && pos <= 15) { // First row for pawns
             searchIndexes = [pos + 8, pos + 16]; // Forward move and double move
@@ -162,10 +172,6 @@ export default function Board() {
               possibleMoves.push(index);
             }
           });
-          break;
-        // Add logic for other pieces as needed
-        default:
-          break;
       }
     }
 
@@ -417,8 +423,6 @@ export default function Board() {
       if(piece.charAt(0) === opponentColor){
         const type = piece.charAt(1);
         let [possibleMoves] = calculatePossibleMoves(localBoard, opponentColor, type, index)
-        if(piece == 'wb'){
-        }
         if(possibleMoves.includes(kingIndex)){
           localChecked = true
           return
@@ -447,12 +451,8 @@ export default function Board() {
       }
     })
     let piece = currentBoard[pieceIndex]
-    if(piece === 'bn'){
-    }
     currentBoard[pieceIndex] = "";
     currentBoard[moveIndex] = piece;
-    if(piece === 'bn'){
-    }
     let inCheck = checkForCheck(currentBoard);
 
     return inCheck
@@ -491,7 +491,24 @@ export default function Board() {
     // Each time a move is made, we check for checks, checkmates, stalemates, etc.
     const localChecked = checkForCheck(board)
     setChecked(localChecked)
-    setLegalMoves(legalMovesUnderCheck())
+    const localLegalMoves = legalMovesUnderCheck() 
+    setLegalMoves(localLegalMoves)
+    if(!(localLegalMoves.length > 0) && localChecked === true){
+      checkMate.play()
+    } else if(!(localLegalMoves.length > 0) && localChecked === false){
+      stalemate.play()
+    } else if (localLegalMoves.length > 0 && localChecked === true) {
+      check.play()
+    } else if (localLegalMoves.length > 0 && localChecked === false){
+      // either a capture or a regular move. . . 
+      if(moveHistory.length > 0){
+        if(moveHistory[moveHistory.length - 1].captured){
+          capture.play()
+        } else {
+          moveAudio.play()
+        }
+      }
+    }
   }, [turn])
 
   useEffect(() => {
@@ -556,7 +573,7 @@ export default function Board() {
       return { boardToSend, capturedPieces }
     }
 
-    history.forEach((move, i) => {
+    history.forEach((move) => {
       boardToSend[move.from] = ""
       boardToSend[move.to] = move.piece
       if(move.captured){
@@ -580,7 +597,7 @@ export default function Board() {
 
 
   return (
-    <div className={'board ' + (checked ? 'check-' + (turn ? "w" : "b") + "k" : "")}> {/* 'rotate' class is working now, */}
+    <div className={'board ' + (checked ? 'check-' + (turn ? "w" : "b") + "k" : "") + (turn ? '' : ' rotate')}> {/* 'rotate' class is working now, */}
       <div className='board-grid' id='board-grid'>
         <BoardMapper board={board} selectedPiece={selectedPiece} setSelectedPiece={setSelectedPiece} turn={turn} />
       </div>
