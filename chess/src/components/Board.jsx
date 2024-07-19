@@ -59,7 +59,12 @@ export default function Board() {
   const [moveHistory, setMoveHistory] = useState([]); // State for move history
   const [checked, setChecked] = useState(false)
   const [legalMoves, setLegalMoves] = useState([])
+
+  const gameStarted = new Audio('../src/assets/audio/gameStart.mp3')
+  const moveAudio = new Audio('../src/assets/audio/move.mp3')
+
   const move = (squareClass) => {
+    moveAudio.play()
     const movePosition = parseInt(squareClass.split('-')[1])
     const moveIndex = movePosition - 1
 
@@ -76,6 +81,10 @@ export default function Board() {
 
     setSelectedPiece(emptyPieceState)
   }
+
+  useEffect(() => {
+    gameStarted.play()
+  }, [])
 
   const calculatePossibleMoves = (localBoard, color, type, pos) => {
     const position = pos + 1
