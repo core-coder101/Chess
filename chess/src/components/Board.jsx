@@ -58,15 +58,16 @@ const BoardMapper = ({ board, selectedPiece, setSelectedPiece, turn }) => {
   });
 }
 
-const capture = new Audio('../src/assets/audio/capture.mp3')
-const castle = new Audio('../src/assets/audio/castle.mp3')
-const check = new Audio('../src/assets/audio/check.mp3')
-const checkMate = new Audio('../src/assets/audio/checkMate.mp3')
-const gameOver = new Audio('../src/assets/audio/gameOver.mp3')
-const gameStart = new Audio('../src/assets/audio/gameStart.mp3')
-const moveAudio = new Audio('../src/assets/audio/move.mp3')
-const stalemate = new Audio('../src/assets/audio/stalemate.mp3')
+const basePath = import.meta.env.VITE_BASE_PATH;
 
+const capture = new Audio(`${basePath}assets/audio/capture.mp3`);
+const castle = new Audio(`${basePath}assets/audio/castle.mp3`);
+const check = new Audio(`${basePath}assets/audio/check.mp3`);
+const checkMate = new Audio(`${basePath}assets/audio/checkMate.mp3`);
+const gameOver = new Audio(`${basePath}assets/audio/gameOver.mp3`);
+const gameStart = new Audio(`${basePath}assets/audio/gameStart.mp3`);
+const moveAudio = new Audio(`${basePath}assets/audio/move.mp3`);
+const stalemate = new Audio(`${basePath}assets/audio/stalemate.mp3`);
 
 export default function Board() {
   const emptyPieceState = {
@@ -597,7 +598,7 @@ export default function Board() {
 
 
   return (
-    <div className={'board ' + (checked ? 'check-' + (turn ? "w" : "b") + "k" : "") + (turn ? '' : ' rotate')}> {/* 'rotate' class is working now, */}
+    <div className={'board ' + (checked ? 'check-' + (turn ? "w" : "b") + "k" : "")}> {/* 'rotate' class is working now, */}
       <div className='board-grid' id='board-grid'>
         <BoardMapper board={board} selectedPiece={selectedPiece} setSelectedPiece={setSelectedPiece} turn={turn} />
       </div>
