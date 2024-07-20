@@ -69,3 +69,4 @@ If you would like to contribute to this project, please follow these guidelines:
 
 - Chess.com: For inspiration and design reference.
 - Vite: For the fast and efficient build tooling.
+- [Sound Effects Source](https://www.youtube.com/watch?v=7skwR49UhqA)
