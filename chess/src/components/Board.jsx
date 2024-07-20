@@ -11,16 +11,6 @@ const initialBoard = [
   'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp',
   'wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr',
 ];
-const checkMateTesting = [
-  'br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br',
-  'bp', 'bp', 'bp', 'bp', '', 'bp', 'bp', 'bp', 
-  '',    '',   '',   '',   '',   '',   '',   '',
-  '',    '',   '',   '',   'bp',   '',   '',   'wq',
-  '',    '',   'wb',   '',   'wp',   '',   '',   '',
-  '',    '',   '',   '',   '',   '',   '',   '',
-  'wp', 'wp', 'wp', 'wp', '', 'wp', 'wp', 'wp',
-  'wr', 'wn', 'wb', '', 'wk', '', 'wn', 'wr',
-];
 
 const BoardMapper = ({ board, selectedPiece, setSelectedPiece, turn }) => {
   return board.map((piece, index) => {
@@ -311,18 +301,32 @@ export default function Board() {
         }
       }
     }
-    if(type === 'k'){
-      captureSearchIndexes = [pos + 7, pos - 7, pos + 8, pos - 8, pos + 9, pos - 9, pos + 1, pos - 1]
-      captureSearchIndexes.map(index => {
-        if(index >= 0 && index < 64){
-          if(localBoard[index] === ""){
+    if (type === 'k') {
+      let captureSearchIndexes = [
+        pos + 7, pos - 7, pos + 8, pos - 8, pos + 9, pos - 9, pos + 1, pos - 1
+      ];
+    
+      if ((pos % 8) === 7) {
+        captureSearchIndexes = captureSearchIndexes.filter(index => 
+          index !== pos + 1 && index !== pos - 7 && index !== pos + 9
+        );
+      } else if ((pos % 8) === 0) {
+        captureSearchIndexes = captureSearchIndexes.filter(index => 
+          index !== pos - 1 && index !== pos + 7 && index !== pos - 9
+        );
+      }
+    
+      captureSearchIndexes.forEach(index => {
+        if (index >= 0 && index < 64) {
+          if (localBoard[index] === "") {
             possibleMoves.push(index);
-          } else if(localBoard[index].charAt(0) !== color) {
+          } else if (localBoard[index].charAt(0) !== color) {
             possibleMoves.push(index);
           }
         }
-      })
+      });
     }
+    
     if(type === 'n'){
       const topRight = pos - 15
       const topLeft = pos - 17
