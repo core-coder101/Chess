@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import '../board.less';
+import { db } from "../config/firebase";
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
+import BoardMapper from './BoardMapper';
 
 const initialBoard = [
   'br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br',
@@ -12,52 +15,16 @@ const initialBoard = [
   'wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr',
 ];
 
-const BoardMapper = ({ board, selectedPiece, setSelectedPiece, turn }) => {
-  return board.map((piece, index) => {
-    const position = index + 1;
-    const splitted = piece.split("")
-    let pieceColor = splitted[0] === "w" ? true : false
-    if (piece && piece !== "h" && splitted.length > 0 && splitted.length < 3) {
-      // true => white, false => black
-      return (
-        <div 
-          key={position} 
-          onClick={() => { 
-            turn === pieceColor ? setSelectedPiece({ piece: piece, position: position }) : null 
-          }}
-          className={`${piece} square-${position} piece ${selectedPiece.piece === piece && selectedPiece.position === position ? "selected-piece" : ""}`}
-        ></div>
-      );
-    } else if (piece === "h") {
-      return <div 
-          key={position} 
-          onClick={() => { 
-            turn === pieceColor ? setSelectedPiece({ piece: piece, position: position }) : null 
-          }}
-          className={`square-${position} possible-move`}
-        ></div>
-    } else if (splitted[2] === 'c') {
-      let pieceStr = `${splitted[0]}${splitted[1]}`
-      return <div 
-          key={position} 
-          className={`${pieceStr} square-${position} piece capturable ${selectedPiece.piece === pieceStr && selectedPiece.position === position ? "selected-piece" : ""}`}
-        ></div>
-    } else {
-      return null;
-    }
-  });
-}
-
 const basePath = import.meta.env.VITE_BASE_PATH
 
-const capture = new Audio(basePath + '/assets/audio/capture.mp3');
-const castle = new Audio(basePath + '/assets/audio/castle.mp3');
-const check = new Audio(basePath + '/assets/audio/check.mp3');
+const capture = new Audio(basePath + 'assets/audio/capture.mp3');
+const castle = new Audio(basePath + 'assets/audio/castle.mp3');
+const check = new Audio(basePath + 'assets/audio/check.mp3');
 const checkMate = new Audio(basePath + 'assets/audio/checkMate.mp3');
-const gameOver = new Audio(basePath + '/assets/audio/gameOver.mp3');
-const gameStart = new Audio(basePath + '/assets/audio/gameStart.mp3');
-const moveAudio = new Audio(basePath + '/assets/audio/move.mp3');
-const stalemate = new Audio(basePath + '/assets/audio/stalemate.mp3');
+const gameOver = new Audio(basePath + 'assets/audio/gameOver.mp3');
+const gameStart = new Audio(basePath + 'assets/audio/gameStart.mp3');
+const moveAudio = new Audio(basePath + 'assets/audio/move.mp3');
+const stalemate = new Audio(basePath + 'assets/audio/stalemate.mp3');
 
 export default function Board() {
   const emptyPieceState = {
