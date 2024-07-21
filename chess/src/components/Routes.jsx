@@ -2,20 +2,24 @@ import React from "react";
 import {Route} from "react-router-dom";
 import Board from "./Board";
 import Login from "./Login";
+import HomePage from "./HomePage";
 
 const AllRoutes = [
   {
     path: "",
+    component:  <HomePage />,
+    type: "Private",
+    default: true,
+  },
+  {
+    path: "/play",
     component:  <Board />,
     type: "Private",
-    authentication: "role",
-    default: true,
   },
   {
     path: "login",
     component:  <Login />,
     type: "Public",
-    authentication: "role",
   },
 ];
 
@@ -47,17 +51,5 @@ export const MapRoutes = (routes) => {
     });
   } else {
     return <></>;
-  }
-};
-
-export const GetUserTemplate = () => {
-  const { user, roles } = useSelector((state) => state.auth);
-  if (!user) {
-    return;
-  } else if (roles.includes(user.Role)) {
-    const filteredTemplateArr = AllTemplates.filter(
-      (template) => template.type == user.Role
-    );
-    return filteredTemplateArr[0].component;
   }
 };

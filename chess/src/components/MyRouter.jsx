@@ -17,19 +17,22 @@ import NotFound from "./NotFound";
 
 export default function MyRouter({ user }) {
     const PublicRoute = () => {
-        return user ? <Navigate to={"/Chess/"} /> : <Outlet />
+        return user ? <Navigate to={"/"} /> : <Outlet />
     }
     const PrivateRoute = () => {
-        return user ? <Outlet /> : <Navigate to={"/Chess/login"} />
+        return user ? <Outlet /> : <Navigate to={"/login"} />
     }
+
+    const basePath = import.meta.env.VITE_BASE_PATH || "/";
+
   return (
-    <Router>
+    <Router basename={basePath}>
       <Routes>
-        <Route path="/Chess/" element={<PublicRoute />}>
+        <Route path="/" element={<PublicRoute />}>
           {MapRoutes(GetPublicRoutes())}
         </Route>
-        <Route path="/Chess/" element={<PrivateRoute />}>
-            {MapRoutes(GetPrivateRoutes())}
+        <Route path="/" element={<PrivateRoute />}>
+          {MapRoutes(GetPrivateRoutes())}
         </Route>
         <Route path='*' element={<NotFound />} />
       </Routes>

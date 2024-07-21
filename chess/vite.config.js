@@ -8,11 +8,11 @@ export default defineConfig({
     open: true,
     host: true,
   },
+  base: process.env.VITE_BASE_PATH,
   plugins: [
     react(),
     legacy({
     targets: ['defaults', 'not IE 11']
   })
 ],
-  base: '/Chess/',
 })

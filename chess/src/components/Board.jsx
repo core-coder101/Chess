@@ -15,18 +15,18 @@ const initialBoard = [
   'wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr',
 ];
 
-const basePath = import.meta.env.VITE_BASE_PATH
+const basePath = import.meta.env.VITE_ASSET_PATH
 
 const capture = new Audio(basePath + 'assets/audio/capture.mp3');
 const castle = new Audio(basePath + 'assets/audio/castle.mp3');
 const check = new Audio(basePath + 'assets/audio/check.mp3');
-const checkMate = new Audio(basePath + 'assets/audio/checkMate.mp3');
+const checkMate = new Audio(basePath + 'assets/audio/checkmate.mp3');
 const gameOver = new Audio(basePath + 'assets/audio/gameOver.mp3');
 const gameStart = new Audio(basePath + 'assets/audio/gameStart.mp3');
 const moveAudio = new Audio(basePath + 'assets/audio/move.mp3');
 const stalemate = new Audio(basePath + 'assets/audio/stalemate.mp3');
 
-export default function Board() {
+export default function Board({ customMoveHistory, muted }) {
   const emptyPieceState = {
     piece: "",
     position: "",
@@ -38,6 +38,13 @@ export default function Board() {
   const [moveHistory, setMoveHistory] = useState([]); // State for move history
   const [checked, setChecked] = useState(false)
   const [legalMoves, setLegalMoves] = useState([])
+
+  useEffect(()=>{
+    if(Array.isArray(customMoveHistory)){
+      const newArr = Array.from(customMoveHistory)
+      setMoveHistory(newArr)
+    }
+  }, [customMoveHistory])
 
   const move = (squareClass) => {
     const movePosition = parseInt(squareClass.split('-')[1])
@@ -57,8 +64,14 @@ export default function Board() {
 
   }
 
+  const playSound = (sound) => {
+    if(!muted){
+      sound.play()
+    }
+  }
+
   useEffect(() => {
-    gameStart.play()
+    playSound(gameStart)
   }, [])
 
   const calculatePossibleMoves = (localBoard, color, type, pos) => {
@@ -313,10 +326,10 @@ export default function Board() {
         // later we will know what condiitions are in common and merge them ig
 
         const setPossibleMove = (index) => {
-          possibleMoves.push(topRight)
-          if(localBoard[index] === ""){
-            possibleMoves.push(index);
-          } else if(localBoard[index].charAt(0) !== color) {
+          if(!(index >= 0 && index < 64)){
+            return
+          }
+          if((localBoard[index] === "") || (localBoard[index].charAt(0) !== color)){
             possibleMoves.push(index);
           }
         }
@@ -430,7 +443,7 @@ export default function Board() {
     return inCheck
   }
 
-  const legalMovesUnderCheck = () => {
+  const calculateLegalMoves = () => {
     const color = (turn ? 'w' : 'b')
     let legalMoves = []
     board.forEach((piece, index) => {
@@ -463,21 +476,21 @@ export default function Board() {
     // Each time a move is made, we check for checks, checkmates, stalemates, etc.
     const localChecked = checkForCheck(board)
     setChecked(localChecked)
-    const localLegalMoves = legalMovesUnderCheck() 
+    const localLegalMoves = calculateLegalMoves()
     setLegalMoves(localLegalMoves)
     if(!(localLegalMoves.length > 0) && localChecked === true){
-      checkMate.play()
+      playSound(checkMate)
     } else if(!(localLegalMoves.length > 0) && localChecked === false){
-      stalemate.play()
+      playSound(stalemate)
     } else if (localLegalMoves.length > 0 && localChecked === true) {
-      check.play()
+      playSound(check)
     } else if (localLegalMoves.length > 0 && localChecked === false){
       // either a capture or a regular move. . . 
       if(moveHistory.length > 0){
         if(moveHistory[moveHistory.length - 1].captured){
-          capture.play()
+          playSound(capture)
         } else {
-          moveAudio.play()
+          playSound(moveAudio)
         }
       }
     }
@@ -539,12 +552,20 @@ export default function Board() {
   }, [selectedPiece]);
 
   const getBoardFromHistory = (history) => {
-    let boardToSend = initialBoard
+    let boardToSend = [
+      'br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br',
+      'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 
+      '',    '',   '',   '',   '',   '',   '',   '',
+      '',    '',   '',   '',   '',   '',   '',   '',
+      '',    '',   '',   '',   '',   '',   '',   '',
+      '',    '',   '',   '',   '',   '',   '',   '',
+      'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp',
+      'wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr',
+    ]
     let capturedPieces = []
-    if(!history.length > 0){
+    if(!(history.length > 0)){
       return { boardToSend, capturedPieces }
     }
-
     history.forEach((move) => {
       boardToSend[move.from] = ""
       boardToSend[move.to] = move.piece
@@ -561,6 +582,17 @@ export default function Board() {
 
   useEffect(() => {
     if(!(moveHistory.length > 0)){
+      setBoard([
+        'br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br',
+        'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 
+        '',    '',   '',   '',   '',   '',   '',   '',
+        '',    '',   '',   '',   '',   '',   '',   '',
+        '',    '',   '',   '',   '',   '',   '',   '',
+        '',    '',   '',   '',   '',   '',   '',   '',
+        'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp',
+        'wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr',
+      ])
+      setTurn(true)
       return
     }
     const { boardToSend, capturedPieces } = getBoardFromHistory(moveHistory)
