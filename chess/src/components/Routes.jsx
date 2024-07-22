@@ -12,9 +12,9 @@ const AllRoutes = [
     default: true,
   },
   {
-    path: "/play",
+    path: "offline",
     component:  <Board />,
-    type: "Private",
+    type: "Public",
   },
   {
     path: "login",

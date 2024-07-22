@@ -89,7 +89,7 @@ export default function HomePage() {
           <button onClick={() => {}} className="hompageButton playOnline">
             Play Online (Coming Soon)
           </button>
-          <button onClick={() => navigate("/play")} className="hompageButton playOffline">
+          <button onClick={() => navigate("/offline")} className="hompageButton playOffline">
             2-Player Offline
           </button>
         </div>
