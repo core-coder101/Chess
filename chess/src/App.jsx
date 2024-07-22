@@ -1,11 +1,19 @@
-import React from 'react'
-import Board from './components/Board.jsx'
+import React, { useEffect, useState } from 'react'
+import { auth } from "./config/firebase";
 import "./App.css"
+import MyRouter from './components/MyRouter.jsx';
+import {useAuthState} from 'react-firebase-hooks/auth';
 
 export default function App() {
+
+  const [user] = useAuthState(auth)
+
+  useEffect(() => {
+    console.log("user: ", user);
+  }, [user])
   return (
     <div className='wrapper'>
-      <Board />
+      <MyRouter user={user} />
     </div>
   )
 }
