@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import '../board.less';
-import { db } from "../config/firebase";
-import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import BoardMapper from './BoardMapper';
 
 const initialBoard = [

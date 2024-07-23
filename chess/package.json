@@ -13,6 +13,7 @@
   },
   "homepage": "https://core-coder101.github.io/Chess",
   "dependencies": {
+    "@reduxjs/toolkit": "^2.2.6",
     "@vitejs/plugin-legacy": "^5.4.1",
     "firebase": "^10.12.4",
     "less": "^4.2.0",

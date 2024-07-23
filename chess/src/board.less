@@ -1,5 +1,4 @@
 :root {
-  /* don't add width, only use height and let aspect-ratio do the rest */
   --board-width: 90%;
   --board-height: 90%;
 }
@@ -29,8 +28,8 @@
     height: unset; // I beleive 'auto' and 'unset' are different things
     width: var(--board-width);
   }
-  .noClickOverlay {
-    height: unset; // I beleive 'auto' and 'unset' are different things
+  .noClickOverlay:not(.noMediaQuery) {
+    height: unset;
     width: var(--board-width);
   }
 }
@@ -117,9 +116,6 @@
   background-color: rgba(255, 255, 0, 0.295);
 }
 
-/* positioning */
-
-// Define the loop mixin
 .generate-classes(@index, @outerIndex) when (@index > 0) {
   // Calculate the class number
 

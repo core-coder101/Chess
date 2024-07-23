@@ -5,17 +5,17 @@ import Login from "./Login";
 import HomePage from "./HomePage";
 
 const AllRoutes = [
-  {
-    path: "",
-    component:  <HomePage />,
-    type: "Public",
-    default: true,
-  },
-  {
-    path: "offline",
-    component:  <Board />,
-    type: "Public",
-  },
+  // {
+  //   path: "",
+  //   component:  <HomePage />,
+  //   type: "Public",
+  //   default: true,
+  // },
+  // {
+  //   path: "offline",
+  //   component:  <Board />,
+  //   type: "Public",
+  // },
   {
     path: "login",
     component:  <Login />,
