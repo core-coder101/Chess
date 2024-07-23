@@ -26,7 +26,7 @@ const gameStart = new Audio(basePath + 'assets/audio/gameStart.mp3');
 const moveAudio = new Audio(basePath + 'assets/audio/move.mp3');
 const stalemate = new Audio(basePath + 'assets/audio/stalemate.mp3');
 
-export default function Board({ customMoveHistory, muted }) {
+export default function Board({ customMoveHistory, muted, className }) {
   const emptyPieceState = {
     piece: "",
     position: "",
@@ -604,7 +604,7 @@ export default function Board({ customMoveHistory, muted }) {
 
 
   return (
-    <div className={'board ' + (checked ? 'check-' + (turn ? "w" : "b") + "k" : "")}> {/* 'rotate' class is working now, */}
+    <div className={'board ' + (checked ? 'check-' + (turn ? "w" : "b") + "k" : "") + (className ? (" " + className) : "")}> {/* 'rotate' class is working now, */}
       <div className='board-grid' id='board-grid'>
         <BoardMapper board={board} selectedPiece={selectedPiece} setSelectedPiece={setSelectedPiece} turn={turn} />
       </div>

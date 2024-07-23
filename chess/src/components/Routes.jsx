@@ -8,7 +8,7 @@ const AllRoutes = [
   {
     path: "",
     component:  <HomePage />,
-    type: "Private",
+    type: "Public",
     default: true,
   },
   {

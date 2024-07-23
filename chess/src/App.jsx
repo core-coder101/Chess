@@ -8,9 +8,6 @@ export default function App() {
 
   const [user] = useAuthState(auth)
 
-  useEffect(() => {
-    console.log("user: ", user);
-  }, [user])
   return (
     <div className='wrapper'>
       <MyRouter user={user} />

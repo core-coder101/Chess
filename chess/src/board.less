@@ -25,14 +25,14 @@
 }
 
 @media (max-width: 880px) {
-  // .board {
-  //   height: unset; // I beleive 'auto' and 'unset' are different things
-  //   width: var(--board-width);
-  // }
-  // .noClickOverlay {
-  //   height: unset; // I beleive 'auto' and 'unset' are different things
-  //   width: var(--board-width);
-  // }
+  .board:not(.noMediaQuery) {
+    height: unset; // I beleive 'auto' and 'unset' are different things
+    width: var(--board-width);
+  }
+  .noClickOverlay {
+    height: unset; // I beleive 'auto' and 'unset' are different things
+    width: var(--board-width);
+  }
 }
 
 .board-grid {

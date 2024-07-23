@@ -17,9 +17,11 @@ import NotFound from "./NotFound";
 
 export default function MyRouter({ user }) {
     const PublicRoute = () => {
+        return <Outlet /> // no authentication needed yet
         return user ? <Navigate to={"/"} /> : <Outlet />
     }
     const PrivateRoute = () => {
+        return <Outlet /> // no authentication needed yet
         return user ? <Outlet /> : <Navigate to={"/login"} />
     }
 
