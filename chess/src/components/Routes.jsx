@@ -3,6 +3,7 @@ import {Route} from "react-router-dom";
 import Board from "./Board";
 import Login from "./Login";
 import HomePage from "./HomePage";
+import Queue from "./Queue";
 
 const AllRoutes = [
   // {
@@ -20,6 +21,12 @@ const AllRoutes = [
     path: "login",
     component:  <Login />,
     type: "Public",
+  },
+  {
+    path: "queue",
+    component:  <Queue />,
+    type: "Private",
+    exact: true,
   },
 ];
 

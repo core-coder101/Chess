@@ -15,15 +15,17 @@ import {
 import NotFound from "./NotFound";
 import HomePage from "./HomePage";
 import Board from "./Board";
+import { useSelector } from "react-redux";
 
 
-export default function MyRouter({ user }) {
+export default function MyRouter() {
+
+  const { user } = useSelector(state => state.user)
+
     const PublicRoute = () => {
-        return <Outlet /> // no authentication needed yet
         return user ? <Navigate to={"/"} /> : <Outlet />
     }
     const PrivateRoute = () => {
-        return <Outlet /> // no authentication needed yet
         return user ? <Outlet /> : <Navigate to={"/login"} />
     }
 

@@ -95,8 +95,8 @@ export default function HomePage() {
       </div>
       <div className="col-lg-6 col-md-6 col-sm-12 homepageMenu">
       <h1 style={{color: "white"}}>Play <span style={{color: "#739552"}}>Chess</span></h1>
-        <div>
-          <button onClick={() => {}} className="hompageButton playOnline">
+        <div style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", width: "80%"}}>
+          <button onClick={() => navigate("/queue")} className="hompageButton playOnline">
             Play Online (Coming Soon)
           </button>
           <button onClick={() => navigate("/offline")} className="hompageButton playOffline">
