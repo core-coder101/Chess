@@ -17,10 +17,13 @@ const createUserSlice = createSlice({
     },
     setPopup: (state, action) => {
       state.popup = !!action.payload;
-      // even though we will only pass true or false to this but I'm still writing '!!' to ensure this stays as a boolean type state
     },
     setUser: (state, action) => {
       state.user = action.payload
+    },
+    showPopup: (state, action) => {
+      state.error = action.payload;
+      state.popup = true;
     }
   },
   extraReducers: (builder) => {
@@ -28,6 +31,6 @@ const createUserSlice = createSlice({
   },
 });
 
-export const { setError, setPopup, setUser } = createUserSlice.actions;
+export const { setError, setPopup, showPopup, setUser } = createUserSlice.actions;
 
 export default createUserSlice.reducer;
