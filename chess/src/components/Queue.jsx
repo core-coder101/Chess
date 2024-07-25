@@ -10,7 +10,7 @@ import {
 } from "firebase/firestore";
 import { useDocumentData } from "react-firebase-hooks/firestore";
 import { useDispatch, useSelector } from "react-redux";
-import { ref, set, remove, onDisconnect, onValue } from "firebase/database";
+import { ref, set, remove, onDisconnect, onValue, get } from "firebase/database";
 import { showPopup } from "../redux/slices/user";
 
 let flag = true;
@@ -30,19 +30,15 @@ export default function Queue() {
   const [gameData, loading, error] = useDocumentData(gameRef);
 
   useEffect(() => {
-    onValue(
-      queueRTDBRef,
-      (snapshot) => {
-        if (!snapshot) {
-          return;
+    get(queueRTDBRef)
+      .then(snapshot => {
+        if(snapshot.exists){
+          setQueueData(Object.values(snapshot.val() || {}))
         }
-        setQueueData(Object.values(snapshot.val() || {}));
-      },
-      (error) => {
-        setQueueData([]);
-        console.error("error in onValue: ", error);
-      }
-    );
+      })
+      .catch(error => {
+        console.error("error while getting queue data: ", error);
+      })
   }, []);
 
   useEffect(() => {
@@ -97,6 +93,7 @@ export default function Queue() {
       await setDoc(gameRef, gameData, { merge: true });
 
       removeFromQueue();
+      await remove(ref(rtdb, `queue/${filtered[0].uid}`)).then().catch(err => console.log(err))
     };
 
     processQueue();
@@ -106,13 +103,13 @@ export default function Queue() {
     if (!gameId) {
       return;
     }
-    if (!gameData && !loading) {
+    if (gameData && !loading) {
       console.log("gameData: ", gameData);
-      setOpponent("");
-      setGameId("");
-      dispatch(showPopup("Opponent disconnected"));
+      // setOpponent("");
+      // setGameId("");
+      // dispatch(showPopup("Opponent disconnected"));
     }
-  }, [gameId]);
+  }, [gameId, gameData]);
 
   const addToQueue = async () => {
     if (!flag) {
