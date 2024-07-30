@@ -5,8 +5,8 @@ const initialState = {
   error: null,
   popup: false,
   uesr: null,
+  gameData: null,
 };
-
 
 const createUserSlice = createSlice({
   name: "userSlice",
@@ -19,18 +19,22 @@ const createUserSlice = createSlice({
       state.popup = !!action.payload;
     },
     setUser: (state, action) => {
-      state.user = action.payload
+      state.user = action.payload;
     },
     showPopup: (state, action) => {
       state.error = action.payload;
       state.popup = true;
-    }
+    },
+    setReduxGameData: (state, action) => {
+      state.gameData = action.payload;
+    },
   },
   extraReducers: (builder) => {
-    builder
+    builder;
   },
 });
 
-export const { setError, setPopup, showPopup, setUser } = createUserSlice.actions;
+export const { setError, setPopup, showPopup, setUser, setReduxGameData } =
+  createUserSlice.actions;
 
 export default createUserSlice.reducer;

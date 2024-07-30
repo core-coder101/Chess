@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 export default function BoardMapper ({ board, selectedPiece, setSelectedPiece, turn }) {
     return board.map((piece, index) => {

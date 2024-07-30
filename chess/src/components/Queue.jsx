@@ -7,13 +7,28 @@ import {
   query,
   where,
   getDocs,
+  collection,
+  or,
+  addDoc,
 } from "firebase/firestore";
-import { useDocumentData } from "react-firebase-hooks/firestore";
+import {
+  useCollectionData,
+  useDocumentData,
+} from "react-firebase-hooks/firestore";
 import { useDispatch, useSelector } from "react-redux";
-import { ref, set, remove, onDisconnect, onValue, get } from "firebase/database";
+import {
+  ref,
+  set,
+  remove,
+  onDisconnect,
+  onValue,
+  get,
+  onChildAdded,
+  push,
+  onChildRemoved,
+} from "firebase/database";
 import { showPopup } from "../redux/slices/user";
-
-let flag = true;
+import { useNavigate } from "react-router-dom";
 
 export default function Queue() {
   const { user } = useSelector((state) => state.user);
@@ -25,20 +40,38 @@ export default function Queue() {
 
   const userQueueRTDBRef = ref(rtdb, `queue/${user.uid}`);
   const queueRTDBRef = ref(rtdb, "queue/");
+  const gamesRTDBRef = ref(rtdb, "games/");
 
-  const gameRef = gameId ? doc(db, "games", gameId) : null;
-  const [gameData, loading, error] = useDocumentData(gameRef);
+  const gameRef = collection(db, "games");
+  const [gamesData, setGamesData] = useState([]);
+
+  const [timer, setTimer] = useState(5);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     get(queueRTDBRef)
-      .then(snapshot => {
-        if(snapshot.exists){
-          setQueueData(Object.values(snapshot.val() || {}))
+      .then((snapshot) => {
+        if (snapshot.exists) {
+          setQueueData(Object.values(snapshot.val() || {}));
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("error while getting queue data: ", error);
-      })
+      });
+    onValue(
+      gamesRTDBRef,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          setGamesData([snapshot.val()]);
+        } else {
+          setGamesData([]);
+        }
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
   }, []);
 
   useEffect(() => {
@@ -55,9 +88,6 @@ export default function Queue() {
         return;
       }
 
-      setOpponent(filtered[0].uid);
-
-      // create game first ig
       // player 1 will be the first one in queue
       const userPositionInQueue = queueData.findIndex(
         (entry) => entry.uid === user.uid
@@ -87,44 +117,80 @@ export default function Queue() {
         };
       }
 
-      setGameId(localGameId);
-
-      const gameRef = doc(db, "games", localGameId);
-      await setDoc(gameRef, gameData, { merge: true });
-
-      removeFromQueue();
-      await remove(ref(rtdb, `queue/${filtered[0].uid}`)).then().catch(err => console.log(err))
+      const gamesCollectionRef = collection(db, "games");
+      const docRef = await addDoc(gamesCollectionRef, gameData); // using addDoc so that firebase auto generates a unique id
+      await set(ref(rtdb, `games/${docRef.id}`), gameData, { merge: true });
     };
 
     processQueue();
   }, [queueData]);
 
   useEffect(() => {
-    if (!gameId) {
-      return;
+    if (gamesData && gamesData.length > 0 && !opponent) {
+      console.log("gamesData: ", gamesData);
+      const filtered = gamesData.find((gameObj) => {
+        const game = Object.values(gameObj)[0];
+        return (
+          game.status === "waiting" &&
+          (game.player1 === user.uid || game.player2 === user.uid)
+        );
+      });
+      console.log("filtered game data: ", filtered);
+      if (Object.values(filtered).length > 0) {
+        const game = Object.values(filtered)[0];
+        const gameID = Object.keys(filtered)[0];
+        console.log("game: ", game);
+        removeFromQueue();
+        setGameId(gameID);
+        setOpponent(game.player1 === user.uid ? game.player1 : game.player2);
+        onDisconnect(ref(rtdb, `games/${gameID}`))
+          .remove()
+          .then(() => {
+            console.log("onDisconnect setup for game");
+          })
+          .catch((error) => {
+            console.error("Error setting up onDisconnect:", error);
+          });
+        onChildRemoved(
+          ref(rtdb, `games/${gameID}`),
+          () => {
+            setOpponent("");
+            setGameId("");
+            // addToQueue();
+            navigate('/')
+            dispatch(showPopup("Opponent disconnected"));
+          },
+          (error) => {
+            console.log(error);
+          }
+        );
+        setTimeout(() => {
+          if(gameID){
+            navigate(`/online/${gameID}`);
+          }
+        }, 5000);
+      }
     }
-    if (gameData && !loading) {
-      console.log("gameData: ", gameData);
-      // setOpponent("");
-      // setGameId("");
-      // dispatch(showPopup("Opponent disconnected"));
+  }, [gameId, gamesData]);
+
+  useEffect(() => {
+    if (opponent) {
+      const interval = setInterval(() => {
+        if (timer > 0) {
+          setTimer((prev) => prev - 1);
+        } else {
+        }
+      }, 1000);
+      return () => clearInterval(interval);
     }
-  }, [gameId, gameData]);
+  }, [opponent]);
 
   const addToQueue = async () => {
-    if (!flag) {
-      return;
-    } else {
-      flag = false;
-    }
     try {
-      // Realtime Database reference
-
       await set(userQueueRTDBRef, {
         uid: user.uid,
       });
 
-      // Set up onDisconnect
       onDisconnect(userQueueRTDBRef)
         .remove()
         .then(() => {
@@ -164,12 +230,14 @@ export default function Queue() {
     return () => {
       console.log("removing");
       removeFromQueue();
+      // remove(ref(rtdb, `games/${gameId}`));
     };
   }, []);
 
   return (
     <div style={{ color: "white" }}>
-      {opponent ? `Opponent found: ${opponent}` : "Waiting in Queue. . ."}
+      {/* {opponent ? `Opponent found: ${opponent}` : "Waiting in Queue. . ."} */}
+      {opponent ? `Match Found ${timer}` : "waiting in queue. . ."}
     </div>
   );
 }
