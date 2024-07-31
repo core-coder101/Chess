@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import '../board.less';
 import BoardMapper from './BoardMapper';
 import { useParams } from 'react-router-dom';
-import { get, ref, set } from 'firebase/database';
+import { get, ref, set, update } from 'firebase/database';
 import { db, rtdb } from '../config/firebase';
 import { showPopup } from '../redux/slices/user';
-import { setDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { useSelector } from 'react-redux';
+import { useDocumentData } from 'react-firebase-hooks/firestore';
 
 const initialBoard = [
   'br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br',
@@ -32,13 +34,14 @@ const stalemate = new Audio(basePath + 'assets/audio/stalemate.mp3');
 export default function Online({ customMoveHistory, muted, className }) {
 
   const { ID } = useParams()
+  const { user } = useSelector(state => state.user)
   const [gameData, setGameData] = useState(null)
 
   useEffect(() => {
     if(gameData && gameData.status === "waiting"){
       console.log("gameData: ", gameData);
-      set(ref(rtdb, `games/${ID}`), { ...gameData, status: 'ongoing' } , { merge: true })
-      setDoc(doc(db, 'games', ID), { ...gameData, status: 'ongoing' }, { merge: true })
+      update(ref(rtdb, `games/${ID}`), { ...gameData, status: 'ongoing' } , { merge: true })
+      updateDoc(doc(db, 'games', ID), { ...gameData, status: 'ongoing' }, { merge: true })
     }
   }, [gameData])
 
@@ -67,14 +70,24 @@ export default function Online({ customMoveHistory, muted, className }) {
     piece: "",
     position: "",
   }
+  // player1 gets white i guess
+  const userTurn = (gameData?.player1 === user.uid) // true is for white, false is for black
 
   const [selectedPiece, setSelectedPiece] = useState(emptyPieceState);
   const [board, setBoard] = useState(initialBoard);
   const [turn, setTurn] = useState(true);
-  const [userTurn, setUserTurn] = useState(true)
   const [moveHistory, setMoveHistory] = useState([]); // State for move history
   const [checked, setChecked] = useState(false)
   const [legalMoves, setLegalMoves] = useState([])
+
+  const [dbGameData, loading, error] = useDocumentData(doc(db, 'games', ID))
+
+  useEffect(() => {
+    if(dbGameData && !loading){
+      console.log("dbGameData: ", dbGameData);
+      setMoveHistory(dbGameData?.moveHistory || [])
+    }
+  }, [dbGameData])
 
   useEffect(()=>{
     if(Array.isArray(customMoveHistory)){
@@ -88,15 +101,15 @@ export default function Online({ customMoveHistory, muted, className }) {
     const moveIndex = movePosition - 1
 
     // Update the move history
-    setMoveHistory(prevHistory => [
-      ...prevHistory,
+    updateDoc(doc(db, 'games', ID), { ...gameData, moveHistory: [
+      ...moveHistory,
       {
         piece: selectedPiece.piece,
         from: selectedPiece.position - 1,
         to: moveIndex,
         captured: (board[moveIndex] !== "" && board[moveIndex] !== "h") ? board[moveIndex].split("")[0]+board[moveIndex].split("")[1] : ""
       }
-    ]);
+    ] }, { merge: true })
     setSelectedPiece(emptyPieceState)
   }
 
@@ -519,8 +532,10 @@ export default function Online({ customMoveHistory, muted, className }) {
     const localLegalMoves = calculateLegalMoves()
     setLegalMoves(localLegalMoves)
     if(!(localLegalMoves.length > 0) && localChecked === true){
+      updateDoc(doc(db, 'games', ID), { ...gameData, status: 'ended' }, { merge: true })
       playSound(checkMate)
     } else if(!(localLegalMoves.length > 0) && localChecked === false){
+      updateDoc(doc(db, 'games', ID), { ...gameData, status: 'ended' }, { merge: true })
       playSound(stalemate)
     } else if (localLegalMoves.length > 0 && localChecked === true) {
       playSound(check)
@@ -644,9 +659,9 @@ export default function Online({ customMoveHistory, muted, className }) {
 
 
   return (
-    <div className={'board ' + (checked ? 'check-' + (turn ? "w" : "b") + "k" : "") + (className ? (" " + className) : "")}> {/* 'rotate' class is working now, */}
+    <div className={'board ' + (userTurn ? "" : "rotate ") + (checked ? 'check-' + (turn ? "w" : "b") + "k" : "") + (className ? (" " + className) : "")}> {/* 'rotate' class is working now, */}
       <div className='board-grid' id='board-grid'>
-        <BoardMapper board={board} selectedPiece={selectedPiece} setSelectedPiece={setSelectedPiece} turn={turn} />
+        <BoardMapper board={board} selectedPiece={selectedPiece} setSelectedPiece={setSelectedPiece} turn={turn} userTurn={userTurn} />
       </div>
     </div>
   )

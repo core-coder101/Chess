@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 
-export default function BoardMapper ({ board, selectedPiece, setSelectedPiece, turn }) {
+export default function BoardMapper ({ board, selectedPiece, setSelectedPiece, turn, userTurn }) {
     return board.map((piece, index) => {
       const position = index + 1;
       const splitted = piece.split("")
@@ -11,7 +11,7 @@ export default function BoardMapper ({ board, selectedPiece, setSelectedPiece, t
           <div 
             key={position} 
             onClick={() => { 
-              turn === pieceColor ? setSelectedPiece({ piece: piece, position: position }) : null 
+              (turn === pieceColor && turn === userTurn) ? setSelectedPiece({ piece: piece, position: position }) : null 
             }}
             className={`${piece} square-${position} piece ${selectedPiece.piece === piece && selectedPiece.position === position ? "selected-piece" : ""}`}
           ></div>
@@ -20,7 +20,7 @@ export default function BoardMapper ({ board, selectedPiece, setSelectedPiece, t
         return <div 
             key={position} 
             onClick={() => { 
-              turn === pieceColor ? setSelectedPiece({ piece: piece, position: position }) : null 
+              (turn === pieceColor && turn === userTurn) ? setSelectedPiece({ piece: piece, position: position }) : null 
             }}
             className={`square-${position} possible-move`}
           ></div>

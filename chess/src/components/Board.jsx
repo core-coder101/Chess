@@ -604,7 +604,7 @@ export default function Board({ customMoveHistory, muted, className }) {
   return (
     <div className={'board ' + (checked ? 'check-' + (turn ? "w" : "b") + "k" : "") + (className ? (" " + className) : "")}> {/* 'rotate' class is working now, */}
       <div className='board-grid' id='board-grid'>
-        <BoardMapper board={board} selectedPiece={selectedPiece} setSelectedPiece={setSelectedPiece} turn={turn} />
+        <BoardMapper board={board} selectedPiece={selectedPiece} setSelectedPiece={setSelectedPiece} turn={turn} userTurn={turn} />
       </div>
     </div>
   )

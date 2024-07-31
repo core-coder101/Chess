@@ -104,6 +104,7 @@ export default function Queue() {
           player1: user.uid,
           player2: filtered[0].uid,
           status: "waiting",
+          moveHistory: [],
           createdAt: new Date().toISOString(),
         };
       } else {
@@ -113,6 +114,7 @@ export default function Queue() {
           player1: filtered[0].uid,
           player2: user.uid,
           status: "waiting",
+          moveHistory: [],
           createdAt: new Date().toISOString(),
         };
       }
@@ -136,7 +138,7 @@ export default function Queue() {
         );
       });
       console.log("filtered game data: ", filtered);
-      if (Object.values(filtered).length > 0) {
+      if (filtered && Object.values(filtered).length > 0) {
         const game = Object.values(filtered)[0];
         const gameID = Object.keys(filtered)[0];
         console.log("game: ", game);
@@ -157,33 +159,40 @@ export default function Queue() {
             setOpponent("");
             setGameId("");
             // addToQueue();
-            navigate('/')
+            navigate("/");
             dispatch(showPopup("Opponent disconnected"));
           },
           (error) => {
             console.log(error);
           }
         );
-        setTimeout(() => {
-          if(gameID){
-            navigate(`/online/${gameID}`);
-          }
-        }, 5000);
       }
     }
   }, [gameId, gamesData]);
 
   useEffect(() => {
-    if (opponent) {
+    if ((opponent, gameId)) {
       const interval = setInterval(() => {
-        if (timer > 0) {
-          setTimer((prev) => prev - 1);
-        } else {
-        }
+        setTimer((prev) => {
+          if (prev > 0) {
+            return prev - 1;
+          } else {
+            clearInterval(interval);
+            return prev;
+          }
+        });
       }, 1000);
-      return () => clearInterval(interval);
+      const navTimeout = setTimeout(() => {
+        console.log("NAVIGATING");
+        navigate(`/online/${gameId}`);
+      }, 5000);
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(navTimeout);
+      };
     }
-  }, [opponent]);
+  }, [gameId, opponent]);
 
   const addToQueue = async () => {
     try {
