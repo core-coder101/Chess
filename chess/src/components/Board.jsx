@@ -18,7 +18,7 @@ const basePath = import.meta.env.VITE_ASSET_PATH
 const capture = new Audio(basePath + 'assets/audio/capture.mp3');
 const castle = new Audio(basePath + 'assets/audio/castle.mp3');
 const check = new Audio(basePath + 'assets/audio/check.mp3');
-const checkMate = new Audio(basePath + 'assets/audio/checkmate.mp3');
+const checkMate = new Audio(basePath + 'assets/audio/checkMate.mp3');
 const gameOver = new Audio(basePath + 'assets/audio/gameOver.mp3');
 const gameStart = new Audio(basePath + 'assets/audio/gameStart.mp3');
 const moveAudio = new Audio(basePath + 'assets/audio/move.mp3');
@@ -36,6 +36,8 @@ export default function Board({ customMoveHistory, muted, className }) {
   const [moveHistory, setMoveHistory] = useState([]); // State for move history
   const [checked, setChecked] = useState(false)
   const [legalMoves, setLegalMoves] = useState([])
+  const [promotePawn, setPromotePawn] = useState("")
+  const [promotionSquareInfo, setPromotionSquareInfo] = useState(null)
 
   useEffect(()=>{
     if(Array.isArray(customMoveHistory)){
@@ -45,9 +47,30 @@ export default function Board({ customMoveHistory, muted, className }) {
   }, [customMoveHistory])
 
   const move = (squareClass) => {
+    console.log("move called");
+    console.log("promotionSquareInfo: ", promotionSquareInfo);
     const movePosition = parseInt(squareClass.split('-')[1])
-    const moveIndex = movePosition - 1
-
+    const moveIndex = movePosition - 1;
+    // checkin for pawn promotion case
+    if(selectedPiece.piece.charAt(1) === 'p' && !promotionSquareInfo){
+      if(selectedPiece.piece.charAt(0) === 'w' && moveIndex >= 0 && moveIndex < 8){
+        setPromotionSquareInfo({
+          piece: selectedPiece.piece,
+          from: selectedPiece.position - 1,
+          to: moveIndex,
+        })
+        setPromotePawn(`w${movePosition.toString().charAt(movePosition.toString().length - 1)}`)
+        return
+      } else if(selectedPiece.piece.charAt(0) === 'b' && moveIndex >= 56 && moveIndex < 64) {
+        setPromotionSquareInfo({
+          piece: selectedPiece.piece,
+          from: selectedPiece.position - 1,
+          to: moveIndex,
+        })
+        setPromotePawn(`b${(movePosition - 6).toString().charAt(movePosition.toString().length - 1)}`)
+        return
+      }
+    }
     // Update the move history
     setMoveHistory(prevHistory => [
       ...prevHistory,
@@ -59,7 +82,26 @@ export default function Board({ customMoveHistory, muted, className }) {
       }
     ]);
     setSelectedPiece(emptyPieceState)
+  }
 
+  const promote = (promoteTo) => {
+    console.log("promotionSquareInfo: ", promotionSquareInfo);
+    console.log("promoteTo received: ", promoteTo);
+    if(!(promotionSquareInfo && promoteTo)){
+      return
+    }
+    setMoveHistory(prevHistory => [
+      ...prevHistory,
+      {
+        piece: promotionSquareInfo.piece,
+        from: promotionSquareInfo.from,
+        to: promotionSquareInfo.to,
+        captured: (board[promotionSquareInfo.to] !== "" && board[promotionSquareInfo.to] !== "h") ? board[promotionSquareInfo.to].split("")[0]+board[promotionSquareInfo.to].split("")[1] : "",
+        promotedTo: promoteTo,
+      }
+    ]);
+    setPromotionSquareInfo(null)
+    setPromotePawn("")
   }
 
   const playSound = (sound) => {
@@ -137,7 +179,7 @@ export default function Board({ customMoveHistory, muted, className }) {
             }
           });
           captureSearchIndexes.forEach(index => {
-            if (index >= 0 && localBoard[index] !== "" && localBoard[index].charAt(0) !== color) {
+            if (index >= 0 && index <= 63 && localBoard[index] !== "" && localBoard[index].charAt(0) !== color) {
               possibleMoves.push(index);
             }
           });
@@ -565,8 +607,11 @@ export default function Board({ customMoveHistory, muted, className }) {
       return { boardToSend, capturedPieces }
     }
     history.forEach((move) => {
+      if(move.promotedTo){
+        console.log("move.promotedTo: ", move.promotedTo);
+      }
       boardToSend[move.from] = ""
-      boardToSend[move.to] = move.piece
+      boardToSend[move.to] = move.promotedTo || move.piece
       if(move.captured){
         capturedPieces.push(move.captured)
       }
@@ -576,6 +621,24 @@ export default function Board({ customMoveHistory, muted, className }) {
 
   }
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if(e.ctrlKey){
+        if(e.key == 'z'){
+          e.stopPropagation()
+          console.log("ctrl + z pressed");
+          if(moveHistory.length > 0){
+            console.log("removing last move");
+            setMoveHistory(prev => prev.slice(0, -1))
+          }
+        }
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyDown)
+    
+    return () => {window.removeEventListener('keydown', handleKeyDown)}
+  }, [moveHistory])
 
 
   useEffect(() => {
@@ -605,6 +668,13 @@ export default function Board({ customMoveHistory, muted, className }) {
     <div className={'board ' + (checked ? 'check-' + (turn ? "w" : "b") + "k" : "") + (className ? (" " + className) : "")}> {/* 'rotate' class is working now, */}
       <div className='board-grid' id='board-grid'>
         <BoardMapper board={board} selectedPiece={selectedPiece} setSelectedPiece={setSelectedPiece} turn={turn} userTurn={turn} />
+        <div className={`promote-${promotePawn.charAt(0)}p square-${promotePawn.slice(1)} promote`}>
+          <div className={`${promotePawn.charAt(0)}q`} onClick={()=>{promote(`${promotePawn.charAt(0)}q`)}}></div>
+          <div className={`${promotePawn.charAt(0)}n`} onClick={()=>{promote(`${promotePawn.charAt(0)}n`)}}></div>
+          <div className={`${promotePawn.charAt(0)}r`} onClick={()=>{promote(`${promotePawn.charAt(0)}r`)}}></div>
+          <div className={`${promotePawn.charAt(0)}b`} onClick={()=>{promote(`${promotePawn.charAt(0)}b`)}}></div>
+          <div className='promotion-close-btn' onClick={() => {setPromotePawn(""); setPromotionSquareInfo(null)}}>x</div>
+        </div>
       </div>
     </div>
   )

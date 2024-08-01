@@ -19,9 +19,6 @@ export default function BoardMapper ({ board, selectedPiece, setSelectedPiece, t
       } else if (piece === "h") {
         return <div 
             key={position} 
-            onClick={() => { 
-              (turn === pieceColor && turn === userTurn) ? setSelectedPiece({ piece: piece, position: position }) : null 
-            }}
             className={`square-${position} possible-move`}
           ></div>
       } else if (splitted[2] === 'c') {
