@@ -47,8 +47,6 @@ export default function Board({ customMoveHistory, muted, className }) {
   }, [customMoveHistory])
 
   const move = (squareClass) => {
-    console.log("move called");
-    console.log("promotionSquareInfo: ", promotionSquareInfo);
     const movePosition = parseInt(squareClass.split('-')[1])
     const moveIndex = movePosition - 1;
     // checkin for pawn promotion case
@@ -607,9 +605,6 @@ export default function Board({ customMoveHistory, muted, className }) {
       return { boardToSend, capturedPieces }
     }
     history.forEach((move) => {
-      if(move.promotedTo){
-        console.log("move.promotedTo: ", move.promotedTo);
-      }
       boardToSend[move.from] = ""
       boardToSend[move.to] = move.promotedTo || move.piece
       if(move.captured){

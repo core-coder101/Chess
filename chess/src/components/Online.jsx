@@ -79,6 +79,8 @@ export default function Online({ customMoveHistory, muted, className }) {
   const [moveHistory, setMoveHistory] = useState([]); // State for move history
   const [checked, setChecked] = useState(false)
   const [legalMoves, setLegalMoves] = useState([])
+  const [promotePawn, setPromotePawn] = useState("")
+  const [promotionSquareInfo, setPromotionSquareInfo] = useState(null)
 
   const [dbGameData, loading, error] = useDocumentData(doc(db, 'games', ID))
 
@@ -100,6 +102,27 @@ export default function Online({ customMoveHistory, muted, className }) {
     const movePosition = parseInt(squareClass.split('-')[1])
     const moveIndex = movePosition - 1
 
+    // checkin for pawn promotion case
+    if(selectedPiece.piece.charAt(1) === 'p' && !promotionSquareInfo){
+      if(selectedPiece.piece.charAt(0) === 'w' && moveIndex >= 0 && moveIndex < 8){
+        setPromotionSquareInfo({
+          piece: selectedPiece.piece,
+          from: selectedPiece.position - 1,
+          to: moveIndex,
+        })
+        setPromotePawn(`w${movePosition.toString().charAt(movePosition.toString().length - 1)}`)
+        return
+      } else if(selectedPiece.piece.charAt(0) === 'b' && moveIndex >= 56 && moveIndex < 64) {
+        setPromotionSquareInfo({
+          piece: selectedPiece.piece,
+          from: selectedPiece.position - 1,
+          to: moveIndex,
+        })
+        setPromotePawn(`b${(movePosition - 6).toString().charAt(movePosition.toString().length - 1)}`)
+        return
+      }
+    }
+
     // Update the move history
     updateDoc(doc(db, 'games', ID), { ...gameData, moveHistory: [
       ...moveHistory,
@@ -113,9 +136,24 @@ export default function Online({ customMoveHistory, muted, className }) {
     setSelectedPiece(emptyPieceState)
   }
 
-  useEffect(() => {
+  const promote = (promoteTo) => {
+    if(!(promotionSquareInfo && promoteTo)){
+      return
+    }
+    updateDoc(doc(db, 'games', ID), { ...gameData, moveHistory: [
+      ...moveHistory,
+      {
+        piece: promotionSquareInfo.piece,
+        from: promotionSquareInfo.from,
+        to: promotionSquareInfo.to,
+        captured: (board[promotionSquareInfo.to] !== "" && board[promotionSquareInfo.to] !== "h") ? board[promotionSquareInfo.to].split("")[0]+board[promotionSquareInfo.to].split("")[1] : "",
+        promotedTo: promoteTo,
+      }
+    ] }, { merge: true })
+    setPromotionSquareInfo(null)
+    setPromotePawn("")
+  }
 
-  }, [])
 
   const playSound = (sound) => {
     if(!muted){
@@ -623,7 +661,7 @@ export default function Online({ customMoveHistory, muted, className }) {
     }
     history.forEach((move) => {
       boardToSend[move.from] = ""
-      boardToSend[move.to] = move.piece
+      boardToSend[move.to] = move.promotedTo || move.piece
       if(move.captured){
         capturedPieces.push(move.captured)
       }
@@ -662,6 +700,13 @@ export default function Online({ customMoveHistory, muted, className }) {
     <div className={'board ' + (userTurn ? "" : "rotate ") + (checked ? 'check-' + (turn ? "w" : "b") + "k" : "") + (className ? (" " + className) : "")}> {/* 'rotate' class is working now, */}
       <div className='board-grid' id='board-grid'>
         <BoardMapper board={board} selectedPiece={selectedPiece} setSelectedPiece={setSelectedPiece} turn={turn} userTurn={userTurn} />
+        <div className={`promote-${promotePawn.charAt(0)}p square-${promotePawn.slice(1)} promote`}>
+          <div className={`${promotePawn.charAt(0)}q`} onClick={()=>{promote(`${promotePawn.charAt(0)}q`)}}></div>
+          <div className={`${promotePawn.charAt(0)}n`} onClick={()=>{promote(`${promotePawn.charAt(0)}n`)}}></div>
+          <div className={`${promotePawn.charAt(0)}r`} onClick={()=>{promote(`${promotePawn.charAt(0)}r`)}}></div>
+          <div className={`${promotePawn.charAt(0)}b`} onClick={()=>{promote(`${promotePawn.charAt(0)}b`)}}></div>
+          <div className='promotion-close-btn' onClick={() => {setPromotePawn(""); setPromotionSquareInfo(null)}}>x</div>
+        </div>
       </div>
     </div>
   )
