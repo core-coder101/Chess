@@ -1,10 +1,8 @@
 import React from "react";
 import { Route } from "react-router-dom";
-import Board from "./Board";
 import Login from "./Login";
-import HomePage from "./HomePage";
 import Queue from "./Queue";
-import Online from "./Online";
+import OnlineTemplate from "./OnlineTemplate";
 
 const AllRoutes = [
   // {
@@ -31,7 +29,7 @@ const AllRoutes = [
   },
   {
     path: "online/:ID",
-    component: <Online />,
+    component: <OnlineTemplate />,
     type: "Private",
   },
 ];

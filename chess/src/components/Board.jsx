@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../board.less';
 import BoardMapper from './BoardMapper';
+import { useDispatch } from 'react-redux';
 
 const initialBoard = [
   'br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br',
@@ -24,7 +25,7 @@ const gameStart = new Audio(basePath + 'assets/audio/gameStart.mp3');
 const moveAudio = new Audio(basePath + 'assets/audio/move.mp3');
 const stalemate = new Audio(basePath + 'assets/audio/stalemate.mp3');
 
-export default function Board({ customMoveHistory, muted, className }) {
+export default function Board({ customMoveHistory, muted, className, showEndScreen }) {
   const emptyPieceState = {
     piece: "",
     position: "",
@@ -38,6 +39,8 @@ export default function Board({ customMoveHistory, muted, className }) {
   const [legalMoves, setLegalMoves] = useState([])
   const [promotePawn, setPromotePawn] = useState("")
   const [promotionSquareInfo, setPromotionSquareInfo] = useState(null)
+
+  const dispatch = useDispatch()
 
   useEffect(()=>{
     if(Array.isArray(customMoveHistory)){
@@ -518,8 +521,12 @@ export default function Board({ customMoveHistory, muted, className }) {
     setLegalMoves(localLegalMoves)
     if(!(localLegalMoves.length > 0) && localChecked === true){
       playSound(checkMate)
+      if(showEndScreen){
+        showEndScreen(turn ? "black" : "white")
+      }
     } else if(!(localLegalMoves.length > 0) && localChecked === false){
       playSound(stalemate)
+      if(showEndScreen){showEndScreen("stalemate")}
     } else if (localLegalMoves.length > 0 && localChecked === true) {
       playSound(check)
     } else if (localLegalMoves.length > 0 && localChecked === false){
@@ -621,9 +628,7 @@ export default function Board({ customMoveHistory, muted, className }) {
       if(e.ctrlKey){
         if(e.key == 'z'){
           e.stopPropagation()
-          console.log("ctrl + z pressed");
           if(moveHistory.length > 0){
-            console.log("removing last move");
             setMoveHistory(prev => prev.slice(0, -1))
           }
         }
@@ -634,7 +639,6 @@ export default function Board({ customMoveHistory, muted, className }) {
     
     return () => {window.removeEventListener('keydown', handleKeyDown)}
   }, [moveHistory])
-
 
   useEffect(() => {
     if(!(moveHistory.length > 0)){

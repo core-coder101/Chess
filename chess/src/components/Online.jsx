@@ -2,12 +2,11 @@ import React, { useEffect, useState } from 'react';
 import '../board.less';
 import BoardMapper from './BoardMapper';
 import { useParams } from 'react-router-dom';
-import { get, ref, set, update } from 'firebase/database';
 import { db, rtdb } from '../config/firebase';
-import { showPopup } from '../redux/slices/user';
-import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
 import { useDocumentData } from 'react-firebase-hooks/firestore';
+import { onDisconnect, ref } from 'firebase/database';
 
 const initialBoard = [
   'br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br',
@@ -31,40 +30,10 @@ const gameStart = new Audio(basePath + 'assets/audio/gameStart.mp3');
 const moveAudio = new Audio(basePath + 'assets/audio/move.mp3');
 const stalemate = new Audio(basePath + 'assets/audio/stalemate.mp3');
 
-export default function Online({ customMoveHistory, muted, className }) {
+export default function Online({ customMoveHistory, muted, className, gameData, showEndScreen  }) {
 
   const { ID } = useParams()
   const { user } = useSelector(state => state.user)
-  const [gameData, setGameData] = useState(null)
-
-  useEffect(() => {
-    if(gameData && gameData.status === "waiting"){
-      console.log("gameData: ", gameData);
-      update(ref(rtdb, `games/${ID}`), { ...gameData, status: 'ongoing' } , { merge: true })
-      updateDoc(doc(db, 'games', ID), { ...gameData, status: 'ongoing' }, { merge: true })
-    }
-  }, [gameData])
-
-  useEffect(() => {
-    if(!ID){
-      navigate('/')
-      return
-    }
-    get(ref(rtdb, `games/${ID}`))
-      .then((snapshot) => {
-        if(snapshot.exists){
-          setGameData(snapshot.val())
-        } else {
-          setGameData(null)
-          showPopup('Invalid Game ID')
-          navigate('/')
-          return
-        }
-      })
-      .catch(err => {
-        console.error(err);
-      })
-  }, [ID])
 
   const emptyPieceState = {
     piece: "",
@@ -572,9 +541,13 @@ export default function Online({ customMoveHistory, muted, className }) {
     if(!(localLegalMoves.length > 0) && localChecked === true){
       updateDoc(doc(db, 'games', ID), { ...gameData, status: 'ended' }, { merge: true })
       playSound(checkMate)
+      if(showEndScreen){
+        showEndScreen(turn !== userTurn ? "user" : "opponent")
+      }
     } else if(!(localLegalMoves.length > 0) && localChecked === false){
       updateDoc(doc(db, 'games', ID), { ...gameData, status: 'ended' }, { merge: true })
       playSound(stalemate)
+      if(showEndScreen){showEndScreen("stalemate")}
     } else if (localLegalMoves.length > 0 && localChecked === true) {
       playSound(check)
     } else if (localLegalMoves.length > 0 && localChecked === false){

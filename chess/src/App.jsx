@@ -16,7 +16,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { get, ref } from "firebase/database";
+import { ThemeProvider, createTheme } from "@mui/material";
 
 export default function App() {
   const dispatch = useDispatch();
@@ -33,6 +33,8 @@ export default function App() {
       };
       console.log("dataToSet: ", userData);
       dispatch(setUser(dataToSet));
+    } else {
+      dispatch(setUser(null));
     }
   }, [userData, dispatch]);
 
@@ -41,41 +43,48 @@ export default function App() {
     if (!user) {
       return;
     }
+  
     const cleanup = async () => {
-      const firestoreDocs = await getDocs(
-        collection(db, "games"),
-        query(
-          and(
-            or(
-              where("player1", "==", user.uid),
-              where("player2", "==", user.uid)
-            ),
-            or(
-              where("status", "==", "waiting"),
-              where("status", "==", "ongoing")
-            )
-          )
-        )
-      );
-      // let docs = [];
-      firestoreDocs.forEach((game) => {
-        deleteDoc(doc(db, "games", game.id));
-      });
-      // console.log("docs: ", docs);
-      // just realized that if the user just logged on, he CAN't be in a game or waiting for a game, so we just delete the docs if there are any
-      // let rtdbDocs = [];
-      // get(ref(rtdb, "games/"))
-      //   .then((snapshot) => {
-      //     if (snapshot.exists) {
-      //       rtdbDocs = snapshot.val();
-      //     }
-      //   })
-      //   .catch((err) => console.error(err));
-      // console.log("docs: ", docs);
-      // console.log("rtdbDocs: ", rtdbDocs);
+      try {
+        // Create a combined query to fetch documents where the user is either player1 or player2, and the status is either 'waiting' or 'ongoing'
+        const firestoreQuery = query(
+          collection(db, "games"),
+          where("player1", "==", user.uid),
+          where("status", "in", ["waiting", "ongoing"])
+        );
+  
+        const firestoreQuery2 = query(
+          collection(db, "games"),
+          where("player2", "==", user.uid),
+          where("status", "in", ["waiting", "ongoing"])
+        );
+  
+        // Fetch the documents matching the queries
+        const firestoreDocs1 = await getDocs(firestoreQuery);
+        const firestoreDocs2 = await getDocs(firestoreQuery2);
+  
+        // Combine the results
+        const firestoreDocs = [...firestoreDocs1.docs, ...firestoreDocs2.docs];
+  
+        // Delete each document found
+        firestoreDocs.forEach((game) => {
+          deleteDoc(doc(db, "games", game.id));
+        });
+  
+      } catch (error) {
+        console.error("Error cleaning up Firestore games:", error);
+      }
     };
+  
     cleanup();
   }, [user]);
+  
+
+  const darkTheme = createTheme({
+    palette: {
+      mode: "dark",
+    },
+  });
 
   return (
     <>
@@ -86,9 +95,11 @@ export default function App() {
         onClose={() => dispatch(setPopup(false))}
         message={error}
       />
-      <div className="wrapper">
-        <MyRouter />
-      </div>
+      <ThemeProvider theme={darkTheme}>
+        <div className="wrapper">
+          <MyRouter />
+        </div>
+      </ThemeProvider>
     </>
   );
 }

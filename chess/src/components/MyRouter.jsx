@@ -12,6 +12,7 @@ import NotFound from "./NotFound";
 import HomePage from "./HomePage";
 import Board from "./Board";
 import { useSelector } from "react-redux";
+import OfflineTemplate from "./OfflineTemplate";
 
 export default function MyRouter() {
   const { user } = useSelector((state) => state.user);
@@ -38,7 +39,8 @@ export default function MyRouter() {
         </Route>
         {/* Routes that are open to everyone */}
         <Route index element={<HomePage />} />
-        <Route path="/offline" element={<Board />} />
+        <Route path="/offline" element={<OfflineTemplate />} />
+        <Route path="/testing" element={<OfflineTemplate />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

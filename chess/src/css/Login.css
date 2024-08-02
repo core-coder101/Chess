@@ -1,0 +1,25 @@
+.Login {
+  display: flex;
+  flex-direction: column;
+  padding: 25px;
+}
+.Login h1 {
+  transition: all 0.5s ease;
+  font-size: 4em;
+  margin-bottom: 25px;
+  text-align: center;
+}
+.Login button {
+  transition: all 0.5s ease;
+  padding: 5px 10px;
+  font-size: 1.75em;
+}
+
+@media (max-width: 576px) {
+  .Login h1 {
+    font-size: 2.5rem;
+  }
+  .Login button {
+    font-size: 1.5em;
+  }
+}

@@ -1,60 +1,79 @@
-.hompageButton{
-    border: none;
-    border-radius: 0.5rem;
-    padding: 20px;
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    width: 100%;
-    min-width: 200px;
-    max-width: 350px;
-    transition: all 0.5s ease;
-    white-space: nowrap;
+.hompageButton {
+  border: none;
+  border-radius: 0.5rem;
+  padding: 20px;
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  width: 100%;
+  min-width: 200px;
+  max-width: 350px;
+  transition: all 0.5s ease;
+  white-space: nowrap;
 }
-.playOnline{
-    background-color: #556e3d;
+.playOnline {
+  background-color: #556e3d;
 }
-.homepageMenu{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+.homepageMenu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
-.homepageMenu h1{
-    font-size: 5em;
-    margin-bottom: 25px;
-    text-align: center;
-    white-space: nowrap;
+.homepageMenu h1 {
+  font-size: 5em;
+  margin-bottom: 25px;
+  text-align: center;
+  white-space: nowrap;
 }
-.playOnline:hover{
-    background-color: #739552;
+.playOnline:hover {
+  background-color: #739552;
 }
-.playOffline:hover{
-    background-color: #8b8b8b;
+.playOffline:hover {
+  background-color: #8b8b8b;
 }
-.homepageOuterDiv{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap-reverse !important;
+.homepageOuterDiv {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap-reverse !important;
 }
-.boardOuterDiv{
-    height: 50%;
-    position: relative;
-    transition: all 0.5s ease;
+.boardOuterDiv {
+  height: 50%;
+  position: relative;
+  transition: all 0.5s ease;
+}
+.logoutButton {
+  width: 100px;
+    aspect-ratio: 22/9;
+  background-color: #8b8b8b;
+  border-radius: 0.5rem;
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.5s ease;
 }
 @media (max-width: 576px) {
-    .homepageMenu h1{
-        font-size: 3rem;
-        margin-bottom: 15px;
-    }
-    .hompageButton{
-        font-size: 14px;
-    }
-    .boardOuterDiv{
-        height: 38%;
-    }
-    .homepageOuterDiv{
-        flex-direction: column-reverse;
-    }
+  .homepageMenu h1 {
+    font-size: 3rem;
+    margin-bottom: 15px;
+  }
+  .logoutButton{
+    width: 70px;
+    font-size: 12px;
+  }
+  .hompageButton {
+    font-size: 14px;
+  }
+  .boardOuterDiv {
+    height: 38%;
+  }
+  .homepageOuterDiv {
+    flex-direction: column-reverse;
+  }
 }

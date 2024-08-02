@@ -1,6 +1,13 @@
 import React from "react";
-import { auth, db, GoogleAuthProvider, signInWithPopup } from "../config/firebase";
+import {
+  auth,
+  db,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "../config/firebase";
 import { doc, setDoc } from "firebase/firestore";
+import { FcGoogle } from "react-icons/fc";
+import "../css/Login.css"
 
 const Login = () => {
   const signInWithGoogle = async () => {
@@ -17,17 +24,26 @@ const Login = () => {
 
   const saveUserToFirestore = async (user) => {
     const userRef = doc(db, "users", user.uid);
-    await setDoc(userRef, {
-      uid: user.uid,
-      email: user.email,
-      displayName: user.displayName,
-      photoURL: user.photoURL,
-    }, { merge: true });
+    await setDoc(
+      userRef,
+      {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+      },
+      { merge: true }
+    );
   };
 
   return (
-    <div>
-      <button onClick={signInWithGoogle}>Sign in with Google</button>
+    <div className="Login">
+      <h1 style={{ color: "white" }}>
+        Log in to Play <span style={{ color: "#739552" }}>Online</span>
+      </h1>
+      <button onClick={signInWithGoogle}>
+        Log in with Google <FcGoogle style={{ width: "40px", height: "40px" }} />
+      </button>
     </div>
   );
 };
