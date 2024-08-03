@@ -10,6 +10,8 @@ import { useTheme } from '@mui/material/styles';
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
+const baseAssetPath = import.meta.env.VITE_ASSET_PATH
+
 export default function OfflineTemplate() {
   let user = null;
   let opponentData = null;
@@ -58,7 +60,7 @@ export default function OfflineTemplate() {
               style={{ backgroundColor: "white" }}
               src={
                 opponentData?.photoURL ||
-                "https://www.pngkey.com/png/full/204-2049354_box-icon-png.png"
+                (baseAssetPath + "assets/img/defaultImg.png")
               }
             />
             <div>
@@ -72,7 +74,7 @@ export default function OfflineTemplate() {
               style={{ backgroundColor: "white" }}
               src={
                 user?.photoUrl ||
-                "https://www.pngkey.com/png/full/204-2049354_box-icon-png.png"
+                (baseAssetPath + "assets/img/defaultImg.png")
               }
             />
             <div>
